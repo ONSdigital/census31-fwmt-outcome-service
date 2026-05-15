@@ -1,0 +1,105 @@
+server:
+  port: 8030
+  tomcat:
+    max-threads: 200
+    min-spare-threads: 10
+spring:
+  application:
+    name: census31-fwmt-outcome-service
+  jackson:
+    serialization:
+      WRITE_DATES_AS_TIMESTAMPS: false
+  security:
+    user:
+      name: "user"
+      password: "password"
+  datasource:
+    url: jdbc:postgresql://localhost/postgres?currentSchema=fwmtg
+    driver-class-name: org.postgresql.Driver
+    schema: classpath:/schema.sql
+    continue-on-error: false
+    username: postgres
+    password: postgres
+    initialization-mode: always      
+
+management:
+  # Place /info and /health in the root
+  endpoints.web.base-path: ''
+  endpoint:
+    health:
+      show-details: always
+
+
+
+logging:
+  profile: DEV
+  level:
+    root: WARN
+    uk.gov.ons.census.fwmt: INFO
+    org.springframework.security: INFO
+    org.springframework.web: INFO
+    org.springframework.amqp: INFO
+    org.hibernate: INFO
+    org.apache.commons.dbcp2: INFO
+    org.springframework: INFO
+
+redis:
+  host: "localhost"
+  port: 6379
+  password: "password"
+  database: 1
+
+outcomeservice:
+  outcomeCodeLookup:
+    path: classpath:/outcomeCodeLookup.txt
+  reasonCodeLookup:
+    path: classpath:/reasonCodeLookup.txt
+  processorsleep:
+    milliseconds: 200
+  refusalEncryptionCodeLookup:
+    path: classpath:/refusalEncryptionCodeLookup.txt
+  pgp:
+    fwmtPublicKey: "classpath:/testPublicKey.public"
+    midlPublicKey: "classpath:/testSecondaryPublicKey.public"
+    directory: "file://${home}/acceptance/data/"
+
+
+
+app:
+  testing: false
+  rabbitmq:
+    gw:
+      username: "guest"
+      password: "guest"
+      host: "localhost"
+      port: 5673
+      virtualHost: "/"
+      initialInterval: 5000
+      multiplier: 3.0
+      maxInterval: 45000
+      maxRetries: 1
+      prefetchCount: 500
+      concurrentConsumers: 10
+      exchanges:
+        error: "GW.Error.Exchange"
+      queues:
+        error: "GW.ErrorQ"
+    rm:
+      username: "guest"
+      password: "guest"
+      host: "localhost"
+      port: 5672
+      virtualHost: "/"
+      initialInterval: 5000
+      multiplier: 3.0
+      maxInterval: 45000
+      maxRetries: 1
+      prefetchCount: 500
+      concurrentConsumers: 10
+      queues:
+        rm:
+          input: "RM.Field"
+          dlq: "RM.FieldDLQ"
+          exchange: "adapter-outbound-exchange"
+          field: "RM.Field"
+

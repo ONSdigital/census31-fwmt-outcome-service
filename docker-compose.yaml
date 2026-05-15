@@ -1,0 +1,38 @@
+version: '3'
+services:
+  web:
+    build:
+      context: .
+      args:
+        jar: 'build/libs/census31-fwmt-outcome-service-*-SNAPSHOT.jar'
+    depends_on:
+      - 'postgres'
+      - 'rabbitmq'
+    ports:
+      - '8025:8025'
+    environment:
+      SPRING_DATASOURCE_URL: 'jdbc:postgresql://postgres/postgres?currentSchema=fwmtg'
+      SPRING_DATASOURCE_PASSWORD: 'password'
+      SPRING_LIQUIBASE_URL: 'jdbc:postgresql://postgres/postgres?currentSchema=fwmtg'
+      SPRING_LIQUIBASE_PASSWORD: 'password'
+      TOTALMOBILE_BASEURL: 'http://mockserver:1080/'
+      RABBITMQ_HOSTNAME: 'rabbitmq'
+  postgres:
+    image: 'postgres:alpine'
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_PASSWORD: 'password'
+  rabbitRM:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitRM
+    ports:
+      - 5672:5672
+      - 15672:15672
+  rabbitGW:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitGW
+    environment:
+    ports:
+      - 5673:5672
+      - 15673:15672
