@@ -13,7 +13,8 @@ import org.springframework.core.io.ClassPathResource;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import uk.gov.census.ffa.storage.utils.StorageUtils;
 
-@SuppressFBWarnings(value="DM_EXIT", justification="App shouldnt start up")
+@SuppressFBWarnings(value = {"DM_EXIT", "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"},
+    justification = "App shouldnt start up; try-with-resources on storage stream")
 @Configuration
 public class GpgConfig {
 

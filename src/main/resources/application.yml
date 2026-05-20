@@ -6,9 +6,6 @@ server:
 spring:
   application:
     name: census31-fwmt-outcome-service
-  jackson:
-    serialization:
-      WRITE_DATES_AS_TIMESTAMPS: false
   security:
     user:
       name: "user"
@@ -20,7 +17,7 @@ spring:
     continue-on-error: false
     username: postgres
     password: postgres
-    initialization-mode: always      
+    initialization-mode: always
 
 management:
   # Place /info and /health in the root

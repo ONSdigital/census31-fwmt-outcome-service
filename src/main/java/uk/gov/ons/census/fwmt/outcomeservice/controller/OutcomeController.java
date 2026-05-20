@@ -1,7 +1,6 @@
 package uk.gov.ons.census.fwmt.outcomeservice.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -25,7 +24,6 @@ import uk.gov.ons.census.fwmt.outcomeservice.service.impl.SwitchCaseIdService;
 import java.util.UUID;
 
 @RestController
-@Import({springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration.class})
 public class OutcomeController implements OutcomeApi {
 
   public static final String COMET_HH_OUTCOME_RECEIVED = "COMET_HH_OUTCOME_RECEIVED";
