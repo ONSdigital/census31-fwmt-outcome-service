@@ -17,7 +17,7 @@ Requires RabbitMQ to start:
 
 To run: 
 
-    ./gradlew bootRun
+    mvn spring-boot:run
 
 ## tm-outcome
 

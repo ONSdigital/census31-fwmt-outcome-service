@@ -1,6 +1,0 @@
-pluginManagement {
-	repositories {
-		gradlePluginPortal()
-	}
-}
-rootProject.name = 'census31-fwmt-outcome-service'
