@@ -18,7 +18,7 @@ import uk.gov.ons.census.fwmt.common.data.spg.SPGNewUnitAddress;
 import uk.gov.ons.census.fwmt.common.data.spg.SPGOutcome;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
 import uk.gov.ons.census.fwmt.events.component.GatewayEventManager;
-import uk.gov.ons.census.fwmt.outcomeservice.message.OutcomePreprocessingProducer;
+import uk.gov.ons.census.fwmt.outcomeservice.messaging.OutcomePreprocessingPublisher;
 import uk.gov.ons.census.fwmt.outcomeservice.service.impl.SwitchCaseIdService;
 
 import java.util.UUID;
@@ -43,7 +43,7 @@ public class OutcomeController implements OutcomeApi {
   private GatewayEventManager gatewayEventManager;
 
   @Autowired
-  private OutcomePreprocessingProducer outcomePreprocessingProducer;
+  private OutcomePreprocessingPublisher outcomePreprocessingProducer;
 
   @Autowired
   private SwitchCaseIdService switchCaseIdService;

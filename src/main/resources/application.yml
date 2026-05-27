@@ -64,6 +64,10 @@ outcomeservice:
 
 app:
   testing: false
+  messaging:
+    provider: rabbit
+    destinations:
+      outcomePreprocessing: "Outcome.Preprocessing"
   rabbitmq:
     gw:
       username: "guest"
