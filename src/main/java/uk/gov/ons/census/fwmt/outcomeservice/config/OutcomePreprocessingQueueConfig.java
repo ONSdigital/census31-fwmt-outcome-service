@@ -14,8 +14,10 @@ import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import uk.gov.ons.census.fwmt.common.messaging.MessagingProperties;
 import org.springframework.retry.interceptor.RetryOperationsInterceptor;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +27,9 @@ import uk.gov.ons.census.fwmt.common.data.ce.CEOutcome;
 import uk.gov.ons.census.fwmt.common.data.household.HHNewSplitAddress;
 import uk.gov.ons.census.fwmt.common.data.household.HHNewStandaloneAddress;
 import uk.gov.ons.census.fwmt.common.data.household.HHOutcome;
+import uk.gov.ons.census.fwmt.common.data.nc.NCOutcome;
+import uk.gov.ons.census.fwmt.common.data.ccs.CCSInterviewOutcome;
+import uk.gov.ons.census.fwmt.common.data.ccs.CCSPropertyListingOutcome;
 import uk.gov.ons.census.fwmt.common.data.spg.SPGNewStandaloneAddress;
 import uk.gov.ons.census.fwmt.common.data.spg.SPGNewUnitAddress;
 import uk.gov.ons.census.fwmt.common.data.spg.SPGOutcome;
@@ -50,10 +55,11 @@ public class OutcomePreprocessingQueueConfig {
 
 
 
-  // Listener Adapter
+  // Listener Adapter (Rabbit lane only — Pub/Sub uses OutcomePreprocessingPubSubConfig)
   @Bean
   @Qualifier("OS_L")
   @Transactional(propagation = Propagation.NEVER)
+  @ConditionalOnProperty(name = MessagingProperties.PROVIDER, havingValue = MessagingProperties.PROVIDER_RABBIT, matchIfMissing = true)
   public MessageListenerAdapter outcomePreprocessingListenerAdapter(OutcomePreprocessingReceiver receiver,
       @Qualifier("OS_MC") MessageConverter mc) {
     MessageListenerAdapter messageListenerAdapter = new MessageListenerAdapter(receiver, "processMessage");
@@ -64,6 +70,7 @@ public class OutcomePreprocessingQueueConfig {
   // Message Listener
   @Bean
   @Qualifier("OS_LC")
+  @ConditionalOnProperty(name = MessagingProperties.PROVIDER, havingValue = MessagingProperties.PROVIDER_RABBIT, matchIfMissing = true)
   public SimpleMessageListenerContainer outcomePreprocessingMessageListener(@Qualifier("gatewayConnectionFactory") ConnectionFactory connectionFactory,
       @Qualifier("OS_L") MessageListenerAdapter messageListenerAdapter,
       RetryOperationsInterceptor retryOperationsInterceptor) {
@@ -91,6 +98,9 @@ public class OutcomePreprocessingQueueConfig {
     idClassMapping.put("uk.gov.ons.census.fwmt.common.data.household.HHOutcome", HHOutcome.class);
     idClassMapping.put("uk.gov.ons.census.fwmt.common.data.household.HHNewSplitAddress", HHNewSplitAddress.class);
     idClassMapping.put("uk.gov.ons.census.fwmt.common.data.household.HHNewStandaloneAddress", HHNewStandaloneAddress.class);
+    idClassMapping.put(CCSPropertyListingOutcome.class.getName(), CCSPropertyListingOutcome.class);
+    idClassMapping.put(CCSInterviewOutcome.class.getName(), CCSInterviewOutcome.class);
+    idClassMapping.put(NCOutcome.class.getName(), NCOutcome.class);
     classMapper.setIdClassMapping(idClassMapping);
     classMapper.setTrustedPackages("*");
     return classMapper;
