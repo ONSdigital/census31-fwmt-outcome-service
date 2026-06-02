@@ -116,5 +116,8 @@ spring:
   cloud:
     gcp:
       project-id: ${FWMT_PUBSUB_PROJECT:fwmt-local}
+      credentials:
+        enabled: false
       pubsub:
         enabled: true
+        emulator-host: ${PUBSUB_EMULATOR_HOST:localhost:8085}

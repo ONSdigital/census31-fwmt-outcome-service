@@ -44,7 +44,6 @@ public class OutcomePreprocessingPubSubConfig {
         new PubSubInboundChannelAdapter(pubSubTemplate, outcomePreprocessingSubscription);
     adapter.setOutputChannel(inputChannel);
     adapter.setAckMode(AckMode.MANUAL);
-    adapter.setPayloadType(BasicAcknowledgeablePubsubMessage.class);
     return adapter;
   }
 

@@ -118,6 +118,7 @@ public class OutcomePreprocessingQueueConfig {
 
   @Bean
   @Qualifier("OS_RT_GW")
+  @ConditionalOnProperty(name = MessagingProperties.PROVIDER, havingValue = MessagingProperties.PROVIDER_RABBIT, matchIfMissing = true)
   public RabbitTemplate preprocessingRabbitTemplate(@Qualifier("OS_MC") MessageConverter mc,
       @Qualifier("gatewayConnectionFactory") ConnectionFactory connectionFactory) {
     RabbitTemplate template = new RabbitTemplate(connectionFactory);
@@ -127,6 +128,7 @@ public class OutcomePreprocessingQueueConfig {
 
   @Bean
   @Qualifier("OS_RT_RM")
+  @ConditionalOnProperty(name = MessagingProperties.PROVIDER, havingValue = MessagingProperties.PROVIDER_RABBIT, matchIfMissing = true)
   public RabbitTemplate rmPreprocessingRabbitTemplate(@Qualifier("OS_MC") MessageConverter mc,
       @Qualifier("rmConnectionFactory") ConnectionFactory connectionFactory) {
     RabbitTemplate template = new RabbitTemplate(connectionFactory);

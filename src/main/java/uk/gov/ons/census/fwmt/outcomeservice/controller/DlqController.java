@@ -1,5 +1,6 @@
 package uk.gov.ons.census.fwmt.outcomeservice.controller;
 
+import com.google.cloud.spring.pubsub.integration.inbound.PubSubInboundChannelAdapter;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -19,6 +20,10 @@ public class DlqController {
   @Qualifier("OS_LC")
   SimpleMessageListenerContainer simpleMessageListenerContainer;
 
+  @Autowired(required = false)
+  @Qualifier("outcomePreprocessingPubSubInbound")
+  PubSubInboundChannelAdapter outcomePreprocessingPubSubInbound;
+
   @GetMapping("/ProcessDLQ")
   public ResponseEntity<String> startDLQProcessor() throws GatewayException {
     outcomeProcessPreprocessingDLQ.processDLQ();
@@ -27,19 +32,23 @@ public class DlqController {
 
   @GetMapping("/StartPreprocessorListener")
   public ResponseEntity<String> startPreprocessorListener() {
-    if (simpleMessageListenerContainer == null) {
-      return ResponseEntity.ok("Preprocessor uses Pub/Sub (no Rabbit listener to start).");
+    if (simpleMessageListenerContainer != null) {
+      simpleMessageListenerContainer.start();
     }
-    simpleMessageListenerContainer.start();
-    return ResponseEntity.ok("Queue listener started.");
+    if (outcomePreprocessingPubSubInbound != null) {
+      outcomePreprocessingPubSubInbound.start();
+    }
+    return ResponseEntity.ok("Preprocessor listener started.");
   }
 
   @GetMapping("/StopPreprocessorListener")
   public ResponseEntity<String> stopPreprocessorListener() {
-    if (simpleMessageListenerContainer == null) {
-      return ResponseEntity.ok("Preprocessor uses Pub/Sub (no Rabbit listener to stop).");
+    if (simpleMessageListenerContainer != null) {
+      simpleMessageListenerContainer.stop();
     }
-    simpleMessageListenerContainer.stop();
-    return ResponseEntity.ok("Queue listener stopped.");
+    if (outcomePreprocessingPubSubInbound != null) {
+      outcomePreprocessingPubSubInbound.stop();
+    }
+    return ResponseEntity.ok("Preprocessor listener stopped.");
   }
 }
