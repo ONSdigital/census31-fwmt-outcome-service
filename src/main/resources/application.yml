@@ -33,11 +33,6 @@ management:
   endpoint:
     health:
       show-details: always
-  health:
-    rabbit:
-      enabled: false
-
-
 
 logging:
   profile: DEV
