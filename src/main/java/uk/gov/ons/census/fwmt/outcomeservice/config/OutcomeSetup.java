@@ -8,6 +8,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeLookup;
+import uk.gov.ons.census.fwmt.outcomeservice.converter.QuestionnaireTypeLookup;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.ReasonCodeLookup;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.RefusalEncryptionLookup;
 
@@ -33,6 +34,9 @@ public class OutcomeSetup {
 
   @Value(value = "${outcomeservice.refusalEncryptionCodeLookup.path}")
   private String refusalEncryptionCodeLookupPath;
+
+  @Value(value = "${outcomeservice.questionnaireTypeLookup.path}")
+  private String questionnaireTypeLookupPath;
 
   @Bean
   public OutcomeLookup buildOutcomeLookup() throws GatewayException {
@@ -69,6 +73,25 @@ public class OutcomeSetup {
 
   public int getMessageProcessorSleepTime(){
     return processorSleepMilliSeconds;
+  }
+
+  @Bean
+  public QuestionnaireTypeLookup buildQuestionnaireTypeLookup() throws GatewayException {
+    String line;
+    Resource resource = resourceLoader.getResource(questionnaireTypeLookupPath);
+    QuestionnaireTypeLookup questionnaireTypeLookup = new QuestionnaireTypeLookup();
+    try (BufferedReader in = new BufferedReader(new InputStreamReader(resource.getInputStream(), UTF_8))) {
+      while ((line = in.readLine()) != null) {
+        if (line.isBlank()) {
+          continue;
+        }
+        String[] lookup = line.split(",");
+        questionnaireTypeLookup.add(lookup[0], lookup[1]);
+      }
+    } catch (IOException e) {
+      throw new GatewayException(GatewayException.Fault.SYSTEM_ERROR, e, "Cannot process questionnaire type lookup");
+    }
+    return questionnaireTypeLookup;
   }
 
   @Bean

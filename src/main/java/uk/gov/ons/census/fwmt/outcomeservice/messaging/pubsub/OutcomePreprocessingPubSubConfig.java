@@ -16,7 +16,7 @@ import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.channel.DirectChannel;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.MessageHandler;
-import uk.gov.ons.census.fwmt.common.error.GatewayException;
+import uk.gov.ons.census.fwmt.outcomeservice.messaging.OutcomePreprocessingExceptionHandler;
 import uk.gov.ons.census.fwmt.outcomeservice.messaging.OutcomePreprocessingJsonCodec;
 import uk.gov.ons.census.fwmt.outcomeservice.messaging.OutcomePreprocessingMessageDispatcher;
 
@@ -48,7 +48,8 @@ public class OutcomePreprocessingPubSubConfig {
   @ServiceActivator(inputChannel = "outcomePreprocessingPubSubInputChannel")
   public MessageHandler outcomePreprocessingPubSubHandler(
       OutcomePreprocessingJsonCodec codec,
-      OutcomePreprocessingMessageDispatcher dispatcher) {
+      OutcomePreprocessingMessageDispatcher dispatcher,
+      OutcomePreprocessingExceptionHandler exceptionHandler) {
     return message -> {
       BasicAcknowledgeablePubsubMessage original =
           message.getHeaders().get(GcpPubSubHeaders.ORIGINAL_MESSAGE, BasicAcknowledgeablePubsubMessage.class);
@@ -57,13 +58,10 @@ public class OutcomePreprocessingPubSubConfig {
         Object payload = codec.fromPubsubMessage(pubsubMessage);
         dispatcher.dispatch(payload);
         original.ack();
-      } catch (GatewayException ex) {
+      } catch (Exception ex) {
         log.error("Failed to process Outcome.Preprocessing Pub/Sub message", ex);
-        original.nack();
-      } catch (RuntimeException ex) {
-        log.error("Failed to process Outcome.Preprocessing Pub/Sub message", ex);
-        original.nack();
-        throw ex;
+        exceptionHandler.handleFailure(pubsubMessage, ex);
+        original.ack();
       }
     };
   }

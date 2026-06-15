@@ -7,6 +7,7 @@ import uk.gov.ons.census.fwmt.common.error.GatewayException;
 import uk.gov.ons.census.fwmt.events.component.GatewayEventManager;
 import uk.gov.ons.census.fwmt.outcomeservice.config.GatewayOutcomeQueueConfig;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceProcessor;
+import uk.gov.ons.census.fwmt.outcomeservice.converter.QuestionnaireTypeLookup;
 import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCache;
 import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCache.GatewayCacheBuilder;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.FulfilmentRequestDto;
@@ -14,7 +15,6 @@ import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
 import uk.gov.ons.census.fwmt.outcomeservice.message.GatewayOutcomeProducer;
 import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCacheService;
 import uk.gov.ons.census.fwmt.outcomeservice.template.TemplateCreator;
-import uk.gov.ons.ctp.common.error.CTPException;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.common.product.model.Product;
 
@@ -34,6 +34,9 @@ public class FulfilmentRequestProcessor implements OutcomeServiceProcessor {
 
   @Autowired
   private ProductReference productReference;
+
+  @Autowired
+  private QuestionnaireTypeLookup questionnaireTypeLookup;
 
   @Autowired
   private GatewayOutcomeProducer gatewayOutcomeProducer;
@@ -61,8 +64,8 @@ public class FulfilmentRequestProcessor implements OutcomeServiceProcessor {
         root.put("outcome", outcome);
         root.put("caseId", caseId);
         root.put("eventDate", eventDateTime);
-        String outcomeEvent = createQuestionnaireRequiredByPostEvent(root, fulfilmentRequest, String.valueOf(caseId),
-            type);
+        String outcomeEvent =
+            createQuestionnaireRequiredByPostEvent(root, fulfilmentRequest, String.valueOf(caseId), type);
 
         gatewayOutcomeProducer.sendOutcome(outcomeEvent, String.valueOf(outcome.getTransactionId()),
             GatewayOutcomeQueueConfig.GATEWAY_FULFILMENT_REQUEST_ROUTING_KEY);
@@ -77,17 +80,21 @@ public class FulfilmentRequestProcessor implements OutcomeServiceProcessor {
     return caseId;
   }
 
-  private String createQuestionnaireRequiredByPostEvent(Map<String, Object> root,
-    FulfilmentRequestDto fulfilmentRequest, String caseId, String type) throws GatewayException {
+  private String createQuestionnaireRequiredByPostEvent(
+      Map<String, Object> root,
+      FulfilmentRequestDto fulfilmentRequest,
+      String caseId,
+      String type)
+      throws GatewayException {
     String individualCaseId = "";
 
-    List<Product> productList = getProductFromQuestionnaireType(fulfilmentRequest);
-    if (productList.get(0).getIndividual() && type.equals("HH")) {
+    Product product = getProductFromQuestionnaireType(fulfilmentRequest);
+    if (product.getIndividual() && type.equals("HH")) {
       individualCaseId = String.valueOf(UUID.randomUUID());
       root.put("individualCaseId", individualCaseId);
       root.put("surveyType", type);
     }
-    root.put("packcode", productList.get(0).getFulfilmentCode());
+    root.put("packcode", product.getFulfilmentCode());
     root.put("requesterTitle", fulfilmentRequest.getRequesterTitle());
     root.put("requesterForename", fulfilmentRequest.getRequesterForename());
     root.put("requesterSurname", fulfilmentRequest.getRequesterSurname());
@@ -98,22 +105,46 @@ public class FulfilmentRequestProcessor implements OutcomeServiceProcessor {
     return TemplateCreator.createOutcomeMessage(FULFILMENT_REQUESTED, root);
   }
 
-  private List<Product> getProductFromQuestionnaireType(FulfilmentRequestDto fulfilmentRequest) {
+  private Product getProductFromQuestionnaireType(FulfilmentRequestDto fulfilmentRequest)
+      throws GatewayException {
+    String questionnaireType = fulfilmentRequest.getQuestionnaireType();
+    String packCode = questionnaireTypeLookup.getPackCode(questionnaireType);
+    if (packCode == null) {
+      throw new GatewayException(
+          GatewayException.Fault.SYSTEM_ERROR,
+          "Unknown questionnaireType: " + questionnaireType);
+    }
+
     Product product = new Product();
     List<Product.RequestChannel> requestChannels = Collections.singletonList(FIELD);
 
     product.setRequestChannels(requestChannels);
-    product.setFulfilmentCode(fulfilmentRequest.getQuestionnaireType());
+    product.setFulfilmentCode(packCode);
 
-    List<Product> productList = null;
+    List<Product> productList;
     try {
       productList = productReference.searchProducts(product);
-      if (productList.size() != 1) throw new GatewayException(GatewayException.Fault.SYSTEM_ERROR,
-          "Failed to find 1 product using Product code: " + fulfilmentRequest.getQuestionnaireType());
-    } catch (CTPException | GatewayException e) {
-      log.error("Error within Product Lookup {}", e);
+    } catch (RuntimeException e) {
+      throw new GatewayException(
+          GatewayException.Fault.SYSTEM_ERROR,
+          e,
+          "Product lookup failed for questionnaireType: "
+              + questionnaireType
+              + ", packCode: "
+              + packCode);
     }
-    return productList;
+
+    if (productList.size() != 1) {
+      throw new GatewayException(
+          GatewayException.Fault.SYSTEM_ERROR,
+          "Failed to find 1 product using questionnaireType: "
+              + questionnaireType
+              + ", packCode: "
+              + packCode
+              + ", matches: "
+              + productList.size());
+    }
+    return productList.get(0);
   }
 
   private boolean isQuestionnaireLinked(FulfilmentRequestDto fulfilmentRequest) {
