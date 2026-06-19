@@ -23,6 +23,8 @@ spring:
       project-id: ${FWMT_PUBSUB_PROJECT:fwmt-local}
       credentials:
         enabled: false
+      firestore:
+        enabled: false
       pubsub:
         enabled: true
         emulator-host: ${PUBSUB_EMULATOR_HOST:localhost:8085}
