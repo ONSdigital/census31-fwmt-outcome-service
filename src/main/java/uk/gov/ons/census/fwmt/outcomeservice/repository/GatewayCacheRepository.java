@@ -1,6 +1,6 @@
 package uk.gov.ons.census.fwmt.outcomeservice.repository;
 
-import javax.persistence.LockModeType;
+import jakarta.persistence.LockModeType;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;

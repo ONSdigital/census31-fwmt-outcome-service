@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Slf4j
