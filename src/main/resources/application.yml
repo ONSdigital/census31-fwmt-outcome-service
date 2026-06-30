@@ -18,6 +18,14 @@ spring:
     username: postgres
     password: postgres
     initialization-mode: always
+  cloud:
+    gcp:
+      project-id: ${FWMT_PUBSUB_PROJECT:fwmt-local}
+      credentials:
+        enabled: false
+      pubsub:
+        enabled: true
+        emulator-host: ${PUBSUB_EMULATOR_HOST:localhost:8085}
 
 management:
   # Place /info and /health in the root
@@ -26,8 +34,6 @@ management:
     health:
       show-details: always
 
-
-
 logging:
   profile: DEV
   level:
@@ -35,7 +41,6 @@ logging:
     uk.gov.ons.census.fwmt: INFO
     org.springframework.security: INFO
     org.springframework.web: INFO
-    org.springframework.amqp: INFO
     org.hibernate: INFO
     org.apache.commons.dbcp2: INFO
     org.springframework: INFO
@@ -51,6 +56,8 @@ outcomeservice:
     path: classpath:/outcomeCodeLookup.txt
   reasonCodeLookup:
     path: classpath:/reasonCodeLookup.txt
+  questionnaireTypeLookup:
+    path: classpath:/questionnaireTypeLookup.txt
   processorsleep:
     milliseconds: 200
   refusalEncryptionCodeLookup:
@@ -65,59 +72,12 @@ outcomeservice:
 app:
   testing: false
   messaging:
-    provider: rabbit
+    provider: pubsub
+    maxRetryCount: 5
     destinations:
       outcomePreprocessing: "Outcome.Preprocessing"
+      outcomePreprocessingDlq: "Outcome.PreprocessingDLQ"
+    subscriptions:
+      outcomePreprocessingDlq: outcome-service-Outcome-PreprocessingDLQ
     pubsub:
       outcome-preprocessing-subscription: outcome-service-Outcome-Preprocessing
-  rabbitmq:
-    gw:
-      username: "guest"
-      password: "guest"
-      host: "localhost"
-      port: 5673
-      virtualHost: "/"
-      initialInterval: 5000
-      multiplier: 3.0
-      maxInterval: 45000
-      maxRetries: 1
-      prefetchCount: 500
-      concurrentConsumers: 10
-      exchanges:
-        error: "GW.Error.Exchange"
-      queues:
-        error: "GW.ErrorQ"
-    rm:
-      username: "guest"
-      password: "guest"
-      host: "localhost"
-      port: 5672
-      virtualHost: "/"
-      initialInterval: 5000
-      multiplier: 3.0
-      maxInterval: 45000
-      maxRetries: 1
-      prefetchCount: 500
-      concurrentConsumers: 10
-      queues:
-        rm:
-          input: "RM.Field"
-          dlq: "RM.FieldDLQ"
-          exchange: "adapter-outbound-exchange"
-          field: "RM.Field"
-
----
-spring:
-  config:
-    activate:
-      on-property:
-        name: app.messaging.provider
-        having-value: pubsub
-  cloud:
-    gcp:
-      project-id: ${FWMT_PUBSUB_PROJECT:fwmt-local}
-      credentials:
-        enabled: false
-      pubsub:
-        enabled: true
-        emulator-host: ${PUBSUB_EMULATOR_HOST:localhost:8085}

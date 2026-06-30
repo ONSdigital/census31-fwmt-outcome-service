@@ -1,7 +1,6 @@
 package uk.gov.ons.census.fwmt.outcomeservice.controller;
 
 import com.google.cloud.spring.pubsub.integration.inbound.PubSubInboundChannelAdapter;
-import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +16,6 @@ public class DlqController {
   OutcomeProcessPreprocessingDlq outcomeProcessPreprocessingDLQ;
 
   @Autowired(required = false)
-  @Qualifier("OS_LC")
-  SimpleMessageListenerContainer simpleMessageListenerContainer;
-
-  @Autowired(required = false)
   @Qualifier("outcomePreprocessingPubSubInbound")
   PubSubInboundChannelAdapter outcomePreprocessingPubSubInbound;
 
@@ -32,9 +27,6 @@ public class DlqController {
 
   @GetMapping("/StartPreprocessorListener")
   public ResponseEntity<String> startPreprocessorListener() {
-    if (simpleMessageListenerContainer != null) {
-      simpleMessageListenerContainer.start();
-    }
     if (outcomePreprocessingPubSubInbound != null) {
       outcomePreprocessingPubSubInbound.start();
     }
@@ -43,9 +35,6 @@ public class DlqController {
 
   @GetMapping("/StopPreprocessorListener")
   public ResponseEntity<String> stopPreprocessorListener() {
-    if (simpleMessageListenerContainer != null) {
-      simpleMessageListenerContainer.stop();
-    }
     if (outcomePreprocessingPubSubInbound != null) {
       outcomePreprocessingPubSubInbound.stop();
     }
