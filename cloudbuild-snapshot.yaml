@@ -1,0 +1,143 @@
+steps:
+  - name: gcr.io/google.com/cloudsdktool/google-cloud-cli:slim
+    id: Prepare Maven Auth
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        TOKEN="$(gcloud auth print-access-token)"
+        cat > /workspace/settings.xml <<EOF
+        <settings>
+          <servers>
+            <server>
+              <id>artifact-registry</id>
+              <username>oauth2accesstoken</username>
+              <password>$${TOKEN}</password>
+            </server>
+            <server>
+              <id>fwmtg-maven-release</id>
+              <username>oauth2accesstoken</username>
+              <password>$${TOKEN}</password>
+            </server>
+            <server>
+              <id>fwmtg-maven-snapshot</id>
+              <username>oauth2accesstoken</username>
+              <password>$${TOKEN}</password>
+            </server>
+          </servers>
+          <profiles>
+            <profile>
+              <id>artifact-registry</id>
+              <repositories>
+                <repository>
+                  <id>central</id>
+                  <url>https://repo.maven.apache.org/maven2</url>
+                  <releases>
+                    <enabled>true</enabled>
+                  </releases>
+                  <snapshots>
+                    <enabled>false</enabled>
+                  </snapshots>
+                </repository>
+                <repository>
+                  <id>fwmtg-maven-release</id>
+                  <url>https://${_REGION}-maven.pkg.dev/${PROJECT_ID}/fwmtg-maven-release</url>
+                  <releases>
+                    <enabled>true</enabled>
+                  </releases>
+                  <snapshots>
+                    <enabled>false</enabled>
+                  </snapshots>
+                </repository>
+                <repository>
+                  <id>fwmtg-maven-snapshot</id>
+                  <url>https://${_REGION}-maven.pkg.dev/${PROJECT_ID}/fwmtg-maven-snapshot</url>
+                  <releases>
+                    <enabled>false</enabled>
+                  </releases>
+                  <snapshots>
+                    <enabled>true</enabled>
+                  </snapshots>
+                </repository>
+              </repositories>
+              <pluginRepositories>
+                <pluginRepository>
+                  <id>central</id>
+                  <url>https://repo.maven.apache.org/maven2</url>
+                  <releases>
+                    <enabled>true</enabled>
+                  </releases>
+                  <snapshots>
+                    <enabled>false</enabled>
+                  </snapshots>
+                </pluginRepository>
+              </pluginRepositories>
+            </profile>
+          </profiles>
+          <activeProfiles>
+            <activeProfile>artifact-registry</activeProfile>
+          </activeProfiles>
+        </settings>
+        EOF
+
+  - name: maven:3.9.16-eclipse-temurin-25
+    id: Compute Snapshot Version
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        if [[ ! -f version.txt ]]; then
+          echo "ERROR: version.txt not found" >&2
+          exit 1
+        fi
+
+        BASE_VERSION="$(tr -d '\r\n' < version.txt)"
+        if [[ -z "$${BASE_VERSION}" ]]; then
+          echo "ERROR: version.txt is empty" >&2
+          exit 1
+        fi
+
+        BASE_VERSION="$(echo "$${BASE_VERSION}" | sed -E 's/-SNAPSHOT$//; s/-rc\.[0-9]+$//')"
+
+        BRANCH_SAFE="$(echo "$${BRANCH_NAME:-feature}" | tr '[:upper:]' '[:lower:]' | sed -E 's#[^a-z0-9]+#-#g; s#^-+##; s#-+$##' | cut -c1-20)"
+        SHORT_SHA_SAFE="$${SHORT_SHA:-local}"
+        EFFECTIVE_VERSION="$${BASE_VERSION}-$${BRANCH_SAFE}-$${SHORT_SHA_SAFE}-SNAPSHOT"
+
+        echo "$${EFFECTIVE_VERSION}" > /workspace/effective-version.txt
+
+  - name: maven:3.9.16-eclipse-temurin-25
+    id: Test
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        EFFECTIVE_VERSION="$(cat /workspace/effective-version.txt)"
+        mvn -B -ntp -s /workspace/settings.xml -Drevision="$${EFFECTIVE_VERSION}" clean verify
+
+  - name: maven:3.9.16-eclipse-temurin-25
+    id: Publish Snapshot
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        EFFECTIVE_VERSION="$(cat /workspace/effective-version.txt)"
+        mvn -B -ntp -s /workspace/settings.xml deploy -DskipTests \
+          -Drevision="$${EFFECTIVE_VERSION}" \
+          -DaltDeploymentRepository=artifact-registry::https://${_REGION}-maven.pkg.dev/${PROJECT_ID}/${_REPO_SUFFIX}
+
+  - name: gcr.io/google.com/cloudsdktool/google-cloud-cli:slim
+    id: Log Published Coordinates
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        VERSION="$(cat /workspace/effective-version.txt)"
+        echo "Published: uk.gov.ons.census.fwmt:census31-fwmt-outcome-service:$${VERSION}"
+        echo "Repository: ${_REPO_SUFFIX}"
+
+substitutions:
+  _REPO_SUFFIX: fwmtg-maven-snapshot
+  _REGION: europe-west2
+
+options:
+  logging: CLOUD_LOGGING_ONLY
