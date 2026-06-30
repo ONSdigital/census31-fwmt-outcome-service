@@ -64,6 +64,12 @@ outcomeservice:
 
 app:
   testing: false
+  messaging:
+    provider: rabbit
+    destinations:
+      outcomePreprocessing: "Outcome.Preprocessing"
+    pubsub:
+      outcome-preprocessing-subscription: outcome-service-Outcome-Preprocessing
   rabbitmq:
     gw:
       username: "guest"
@@ -100,3 +106,18 @@ app:
           exchange: "adapter-outbound-exchange"
           field: "RM.Field"
 
+---
+spring:
+  config:
+    activate:
+      on-property:
+        name: app.messaging.provider
+        having-value: pubsub
+  cloud:
+    gcp:
+      project-id: ${FWMT_PUBSUB_PROJECT:fwmt-local}
+      credentials:
+        enabled: false
+      pubsub:
+        enabled: true
+        emulator-host: ${PUBSUB_EMULATOR_HOST:localhost:8085}

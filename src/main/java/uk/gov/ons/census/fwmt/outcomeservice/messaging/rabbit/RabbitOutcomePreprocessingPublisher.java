@@ -1,4 +1,4 @@
-package uk.gov.ons.census.fwmt.outcomeservice.message;
+package uk.gov.ons.census.fwmt.outcomeservice.messaging.rabbit;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -9,10 +9,12 @@ import org.springframework.amqp.AmqpException;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
+import uk.gov.ons.census.fwmt.common.messaging.MessagingProperties;
+import uk.gov.ons.census.fwmt.outcomeservice.messaging.OutcomePreprocessingPublisher;
 import uk.gov.ons.census.fwmt.common.data.ccs.CCSInterviewOutcome;
 import uk.gov.ons.census.fwmt.common.data.ccs.CCSPropertyListingOutcome;
 import uk.gov.ons.census.fwmt.common.data.ce.CENewStandaloneAddress;
@@ -29,11 +31,14 @@ import uk.gov.ons.census.fwmt.outcomeservice.config.OutcomePreprocessingQueueCon
 
 @Slf4j
 @Component
-public class OutcomePreprocessingProducer {
+@ConditionalOnProperty(name = MessagingProperties.PROVIDER, havingValue = MessagingProperties.PROVIDER_RABBIT, matchIfMissing = true)
+public class RabbitOutcomePreprocessingPublisher implements OutcomePreprocessingPublisher {
 
-  @Autowired
-  @Qualifier("OS_RT_GW")
-  private RabbitTemplate rabbitTemplate;
+  private final RabbitTemplate rabbitTemplate;
+
+  public RabbitOutcomePreprocessingPublisher(@Qualifier("OS_RT_GW") RabbitTemplate rabbitTemplate) {
+    this.rabbitTemplate = rabbitTemplate;
+  }
 
   @Retryable
   public void sendSpgOutcomeToPreprocessingQueue(SPGOutcome spgOutcome) {

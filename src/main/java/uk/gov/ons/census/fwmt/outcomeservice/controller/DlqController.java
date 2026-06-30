@@ -1,7 +1,9 @@
 package uk.gov.ons.census.fwmt.outcomeservice.controller;
 
+import com.google.cloud.spring.pubsub.integration.inbound.PubSubInboundChannelAdapter;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,8 +16,13 @@ public class DlqController {
   @Autowired
   OutcomeProcessPreprocessingDlq outcomeProcessPreprocessingDLQ;
 
-  @Autowired
+  @Autowired(required = false)
+  @Qualifier("OS_LC")
   SimpleMessageListenerContainer simpleMessageListenerContainer;
+
+  @Autowired(required = false)
+  @Qualifier("outcomePreprocessingPubSubInbound")
+  PubSubInboundChannelAdapter outcomePreprocessingPubSubInbound;
 
   @GetMapping("/ProcessDLQ")
   public ResponseEntity<String> startDLQProcessor() throws GatewayException {
@@ -25,13 +32,23 @@ public class DlqController {
 
   @GetMapping("/StartPreprocessorListener")
   public ResponseEntity<String> startPreprocessorListener() {
-    simpleMessageListenerContainer.start();
-    return ResponseEntity.ok("Queue listener started.");
+    if (simpleMessageListenerContainer != null) {
+      simpleMessageListenerContainer.start();
+    }
+    if (outcomePreprocessingPubSubInbound != null) {
+      outcomePreprocessingPubSubInbound.start();
+    }
+    return ResponseEntity.ok("Preprocessor listener started.");
   }
 
   @GetMapping("/StopPreprocessorListener")
   public ResponseEntity<String> stopPreprocessorListener() {
-    simpleMessageListenerContainer.stop();
-    return ResponseEntity.ok("Queue listener stopped.");
+    if (simpleMessageListenerContainer != null) {
+      simpleMessageListenerContainer.stop();
+    }
+    if (outcomePreprocessingPubSubInbound != null) {
+      outcomePreprocessingPubSubInbound.stop();
+    }
+    return ResponseEntity.ok("Preprocessor listener stopped.");
   }
 }
