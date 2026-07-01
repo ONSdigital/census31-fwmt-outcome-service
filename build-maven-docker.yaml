@@ -1,0 +1,34 @@
+timeout: 1200s
+options:
+  automapSubstitutions: true
+  defaultLogsBucketBehavior: REGIONAL_USER_OWNED_BUCKET
+
+substitutions:
+  _DOCKER_REGION: "europe-west1"
+  _DOCKER_REPO: "fwmtg-docker-ci"
+  _IMAGE: "census31-fwmt-outcome-service"
+
+steps:
+  - name: "maven:3.9.16-eclipse-temurin-25"
+    id: "build-jar"
+    args: ["-B", "package", "-DskipTests", "-Dmaven.repo.local=/workspace/.m2"]
+
+  - name: "gcr.io/cloud-builders/docker"
+    id: "build-image"
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        docker build --pull \
+          --build-arg jar=$$(ls target/*.jar | grep -v original | head -1) \
+          -t "${_DOCKER_REGION}-docker.pkg.dev/${PROJECT_ID}/${_DOCKER_REPO}/${_IMAGE}:${SHORT_SHA}" \
+          .
+
+  - name: "gcr.io/cloud-builders/docker"
+    id: "push-image"
+    args:
+      - push
+      - "${_DOCKER_REGION}-docker.pkg.dev/${PROJECT_ID}/${_DOCKER_REPO}/${_IMAGE}:${SHORT_SHA}"
+
+images:
+  - "${_DOCKER_REGION}-docker.pkg.dev/${PROJECT_ID}/${_DOCKER_REPO}/${_IMAGE}:${SHORT_SHA}"
