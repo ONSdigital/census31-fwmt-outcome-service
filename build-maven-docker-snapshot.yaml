@@ -5,8 +5,9 @@ options:
 
 substitutions:
   _DOCKER_REGION: "europe-west2"
-  _DOCKER_REPO: "fwmtg-docker-ci"
+  _DOCKER_REPO: "fwmtg-docker-snapshot"
   _IMAGE: "census31-fwmt-outcome-service"
+  _REGION: "europe-west2"
 
 steps:
   - name: "gcr.io/google.com/cloudsdktool/google-cloud-cli:slim"
@@ -47,13 +48,13 @@ steps:
                 </repository>
                 <repository>
                   <id>fwmtg-maven-release</id>
-                  <url>https://europe-west2-maven.pkg.dev/c31-fwmtg-ci-prod/fwmtg-maven-release</url>
+                  <url>https://${_REGION}-maven.pkg.dev/${PROJECT_ID}/fwmtg-maven-release</url>
                   <releases><enabled>true</enabled></releases>
                   <snapshots><enabled>false</enabled></snapshots>
                 </repository>
                 <repository>
                   <id>fwmtg-maven-snapshot</id>
-                  <url>https://europe-west2-maven.pkg.dev/c31-fwmtg-ci-prod/fwmtg-maven-snapshot</url>
+                  <url>https://${_REGION}-maven.pkg.dev/${PROJECT_ID}/fwmtg-maven-snapshot</url>
                   <releases><enabled>false</enabled></releases>
                   <snapshots><enabled>true</enabled></snapshots>
                 </repository>
@@ -80,9 +81,10 @@ steps:
     args:
       - -c
       - |
+        BRANCH_SAFE="$$(echo "${BRANCH_NAME}" | tr '[:upper:]' '[:lower:]' | sed -E 's#[^a-z0-9]+#-#g; s#^-+##; s#-+$##' | cut -c1-20)"
         docker build --pull \
           --build-arg jar=$$(ls target/*.jar | grep -v original | head -1) \
-          -t "${_DOCKER_REGION}-docker.pkg.dev/${PROJECT_ID}/${_DOCKER_REPO}/${_IMAGE}:${SHORT_SHA}" \
+          -t "${_DOCKER_REGION}-docker.pkg.dev/${PROJECT_ID}/${_DOCKER_REPO}/${_IMAGE}:$${BRANCH_SAFE}-${SHORT_SHA}-SNAPSHOT" \
           .
 
   - name: "gcr.io/cloud-builders/docker"
@@ -92,7 +94,5 @@ steps:
       - -c
       - |
         gcloud auth configure-docker ${_DOCKER_REGION}-docker.pkg.dev
-        docker push "${_DOCKER_REGION}-docker.pkg.dev/${PROJECT_ID}/${_DOCKER_REPO}/${_IMAGE}:${SHORT_SHA}"
-
-images:
-  - "${_DOCKER_REGION}-docker.pkg.dev/${PROJECT_ID}/${_DOCKER_REPO}/${_IMAGE}:${SHORT_SHA}"
+        BRANCH_SAFE="$$(echo "${BRANCH_NAME}" | tr '[:upper:]' '[:lower:]' | sed -E 's#[^a-z0-9]+#-#g; s#^-+##; s#-+$##' | cut -c1-20)"
+        docker push "${_DOCKER_REGION}-docker.pkg.dev/${PROJECT_ID}/${_DOCKER_REPO}/${_IMAGE}:$${BRANCH_SAFE}-${SHORT_SHA}-SNAPSHOT"
