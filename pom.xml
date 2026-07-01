@@ -31,7 +31,7 @@
       <version>27.0.1-rc.905645</version>
     </dependency>
     <dependency>
-      <groupId>uk.gov.ons.ctp.integration.common</groupId>
+      <groupId>ons.census.int.common</groupId>
       <artifactId>product-reference</artifactId>
     </dependency>
     <dependency>
