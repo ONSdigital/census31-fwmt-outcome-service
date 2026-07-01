@@ -33,7 +33,6 @@
     <dependency>
       <groupId>uk.gov.ons.ctp.integration.common</groupId>
       <artifactId>product-reference</artifactId>
-      <version>1.0.0-local.20260701092235</version>
     </dependency>
     <dependency>
       <groupId>uk.gov.ons.census.ffa</groupId>
