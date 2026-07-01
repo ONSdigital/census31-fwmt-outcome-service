@@ -23,7 +23,7 @@ import java.util.*;
 
 import static uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceLogConfig.*;
 import static uk.gov.ons.census.fwmt.outcomeservice.enums.EventType.FULFILMENT_REQUESTED;
-import static uk.gov.ons.ctp.integration.common.product.model.Product.RequestChannel.FIELD;
+import uk.gov.ons.ctp.common.domain.Channel;
 
 @Slf4j
 @Component("FULFILMENT_REQUESTED")
@@ -116,7 +116,7 @@ public class FulfilmentRequestProcessor implements OutcomeServiceProcessor {
     }
 
     Product product = new Product();
-    List<Product.RequestChannel> requestChannels = Collections.singletonList(FIELD);
+    List<Channel> requestChannels = Collections.singletonList(Channel.FIELD);
 
     product.setRequestChannels(requestChannels);
     product.setFulfilmentCode(packCode);
