@@ -9,9 +9,70 @@ substitutions:
   _IMAGE: "census31-fwmt-outcome-service"
 
 steps:
+  - name: "gcr.io/google.com/cloudsdktool/google-cloud-cli:slim"
+    id: "prepare-maven-auth"
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        TOKEN="$(gcloud auth print-access-token)"
+        cat > /workspace/settings.xml <<EOF
+        <settings>
+          <servers>
+            <server>
+              <id>artifact-registry</id>
+              <username>oauth2accesstoken</username>
+              <password>${TOKEN}</password>
+            </server>
+            <server>
+              <id>fwmtg-maven-release</id>
+              <username>oauth2accesstoken</username>
+              <password>${TOKEN}</password>
+            </server>
+            <server>
+              <id>fwmtg-maven-snapshot</id>
+              <username>oauth2accesstoken</username>
+              <password>${TOKEN}</password>
+            </server>
+          </servers>
+          <profiles>
+            <profile>
+              <id>artifact-registry</id>
+              <repositories>
+                <repository>
+                  <id>central</id>
+                  <url>https://repo.maven.apache.org/maven2</url>
+                  <releases><enabled>true</enabled></releases>
+                  <snapshots><enabled>false</enabled></snapshots>
+                </repository>
+                <repository>
+                  <id>fwmtg-maven-release</id>
+                  <url>https://europe-west2-maven.pkg.dev/c31-fwmtg-ci-prod/fwmtg-maven-release</url>
+                  <releases><enabled>true</enabled></releases>
+                  <snapshots><enabled>false</enabled></snapshots>
+                </repository>
+                <repository>
+                  <id>fwmtg-maven-snapshot</id>
+                  <url>https://europe-west2-maven.pkg.dev/c31-fwmtg-ci-prod/fwmtg-maven-snapshot</url>
+                  <releases><enabled>false</enabled></releases>
+                  <snapshots><enabled>true</enabled></snapshots>
+                </repository>
+              </repositories>
+            </profile>
+          </profiles>
+          <activeProfiles>
+            <activeProfile>artifact-registry</activeProfile>
+          </activeProfiles>
+        </settings>
+        EOF
+
   - name: "maven:3.9.16-eclipse-temurin-25"
     id: "build-jar"
-    args: ["-B", "package", "-DskipTests", "-Dmaven.repo.local=/workspace/.m2"]
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        mvn -B -ntp -s /workspace/settings.xml package -DskipTests -Dmaven.repo.local=/workspace/.m2
 
   - name: "gcr.io/cloud-builders/docker"
     id: "build-image"
