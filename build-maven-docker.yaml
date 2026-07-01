@@ -22,17 +22,17 @@ steps:
             <server>
               <id>artifact-registry</id>
               <username>oauth2accesstoken</username>
-              <password>${TOKEN}</password>
+              <password>$${TOKEN}</password>
             </server>
             <server>
               <id>fwmtg-maven-release</id>
               <username>oauth2accesstoken</username>
-              <password>${TOKEN}</password>
+              <password>$${TOKEN}</password>
             </server>
             <server>
               <id>fwmtg-maven-snapshot</id>
               <username>oauth2accesstoken</username>
-              <password>${TOKEN}</password>
+              <password>$${TOKEN}</password>
             </server>
           </servers>
           <profiles>
