@@ -118,36 +118,16 @@ steps:
         EFFECTIVE_VERSION="$(cat /workspace/effective-version.txt)"
         mvn -B -ntp -s /workspace/settings.xml -Drevision="$${EFFECTIVE_VERSION}" clean verify
 
-  - name: maven:3.9.16-eclipse-temurin-25
-    id: Publish Release Candidate
-    entrypoint: bash
-    args:
-      - -ceu
-      - |
-        EFFECTIVE_VERSION="$(cat /workspace/effective-version.txt)"
-        mvn -B -ntp -s /workspace/settings.xml deploy -DskipTests \
-          -Drevision="$${EFFECTIVE_VERSION}" \
-          -DaltDeploymentRepository=artifact-registry::default::https://${_REGION}-maven.pkg.dev/${PROJECT_ID}/${_REPO_SUFFIX}
-
-  - name: gcr.io/google.com/cloudsdktool/google-cloud-cli:slim
-    id: Log Published Coordinates
-    entrypoint: bash
-    args:
-      - -ceu
-      - |
-        VERSION="$(cat /workspace/effective-version.txt)"
-        echo "Published : uk.gov.ons.census.fwmt:census31-fwmt-outcome-service:$${VERSION}"
-        echo "Repository: ${_REPO_SUFFIX}"
-
   - name: gcr.io/cloud-builders/docker
     id: Build Docker Main Image
     entrypoint: bash
     args:
       - -ceu
       - |
+        EFFECTIVE_VERSION="$(cat /workspace/effective-version.txt)"
         docker build --pull \
           --build-arg jar=$(ls target/*.jar | grep -v original | head -1) \
-          -t "${_DOCKER_REGION}-docker.pkg.dev/${PROJECT_ID}/${_DOCKER_REPO}/${_IMAGE}:${SHORT_SHA}" \
+          -t "${_DOCKER_REGION}-docker.pkg.dev/${PROJECT_ID}/${_DOCKER_REPO}/${_IMAGE}:$${EFFECTIVE_VERSION}" \
           .
 
   - name: gcr.io/cloud-builders/docker
@@ -156,10 +136,11 @@ steps:
     args:
       - -ceu
       - |
-        docker push "${_DOCKER_REGION}-docker.pkg.dev/${PROJECT_ID}/${_DOCKER_REPO}/${_IMAGE}:${SHORT_SHA}"
+        EFFECTIVE_VERSION="$(cat /workspace/effective-version.txt)"
+        docker push "${_DOCKER_REGION}-docker.pkg.dev/${PROJECT_ID}/${_DOCKER_REPO}/${_IMAGE}:$${EFFECTIVE_VERSION}"
 
 images:
-  - "${_DOCKER_REGION}-docker.pkg.dev/${PROJECT_ID}/${_DOCKER_REPO}/${_IMAGE}:${SHORT_SHA}"
+  - "${_DOCKER_REGION}-docker.pkg.dev/${PROJECT_ID}/${_DOCKER_REPO}/${_IMAGE}:$${EFFECTIVE_VERSION}"
 
 substitutions:
   _DOCKER_REGION: europe-west2
