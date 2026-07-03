@@ -158,7 +158,7 @@ steps:
 
 substitutions:
   _DOCKER_REGION: europe-west2
-  _DOCKER_REPO: fwmtg-docker-ci
+  _DOCKER_REPO: "fwmtg-docker-release"
   _IMAGE: census31-fwmt-outcome-service
   _REPO_SUFFIX: fwmtg-maven-snapshot
   _REGION: europe-west2
