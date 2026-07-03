@@ -156,7 +156,6 @@ steps:
     args:
       - -ceu
       - |
-        gcloud auth configure-docker ${_DOCKER_REGION}-docker.pkg.dev
         docker push "${_DOCKER_REGION}-docker.pkg.dev/${PROJECT_ID}/${_DOCKER_REPO}/${_IMAGE}:${SHORT_SHA}"
 
 images:
