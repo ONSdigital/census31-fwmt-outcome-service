@@ -15,6 +15,12 @@
   <packaging>jar</packaging>
   <name>census31-fwmt-outcome-service</name>
 
+  <properties>
+    <fwmt.common.version>27.0.1-rc.905645</fwmt.common.version>
+    <fwmt.events.version>27.0.1-rc.509100</fwmt.events.version>
+    <fwmt.storage.utils.version>27.0.1-rc.528060</fwmt.storage.utils.version>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>com.github.spotbugs</groupId>
@@ -23,12 +29,12 @@
     <dependency>
       <groupId>uk.gov.ons.census.fwmt</groupId>
       <artifactId>census31-fwmt-events</artifactId>
-      <version>27.0.1-rc.509100</version>
+      <version>${fwmt.events.version}</version>
     </dependency>
     <dependency>
       <groupId>uk.gov.ons.census.fwmt</groupId>
       <artifactId>census31-fwmt-common</artifactId>
-      <version>27.0.1-rc.905645</version>
+      <version>${fwmt.common.version}</version>
     </dependency>
     <dependency>
       <groupId>ons.census.int.common</groupId>
@@ -38,7 +44,7 @@
     <dependency>
       <groupId>uk.gov.ons.census.ffa</groupId>
       <artifactId>census31-fwmt-storage-utils</artifactId>
-      <version>27.0.1-rc.528060</version>
+      <version>${fwmt.storage.utils.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.retry</groupId>
