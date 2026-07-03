@@ -99,7 +99,7 @@ steps:
 
         BASE_VERSION="$(echo "$${BASE_VERSION}" | sed -E 's/-SNAPSHOT$//; s/-rc\.[0-9]+$//')"
 
-        BRANCH_SAFE="$(echo "$${BRANCH_NAME:-feature}" | tr '[:upper:]' '[:lower:]' | sed -E 's#[^a-z0-9]+#-#g; s#^-+##; s#-+$##' | cut -c1-20)"
+        BRANCH_SAFE="$$(echo "$${BRANCH_NAME:-feature}" | tr '[:upper:]' '[:lower:]' | sed -E 's#[^a-z0-9]+#-#g; s#^-+##; s#-+$##' | cut -c1-20)"
         SHORT_SHA_SAFE="$${SHORT_SHA:-local}"
         EFFECTIVE_VERSION="$${BASE_VERSION}-$${BRANCH_SAFE}-$${SHORT_SHA_SAFE}-SNAPSHOT"
 
@@ -135,7 +135,31 @@ steps:
         echo "Published: uk.gov.ons.census.fwmt:census31-fwmt-outcome-service:$${VERSION}"
         echo "Repository: ${_REPO_SUFFIX}"
 
+  - name: gcr.io/cloud-builders/docker
+    id: Build Docker Snapshot Image
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        BRANCH_SAFE="$$(echo "${BRANCH_NAME:-feature}" | tr '[:upper:]' '[:lower:]' | sed -E 's#[^a-z0-9]+#-#g; s#^-+##; s#-+$##' | cut -c1-20)"
+        docker build --pull \
+          --build-arg jar=$(ls target/*.jar | grep -v original | head -1) \
+          -t "${_DOCKER_REGION}-docker.pkg.dev/${PROJECT_ID}/${_DOCKER_REPO}/${_IMAGE}:$${BRANCH_SAFE}-${SHORT_SHA}-SNAPSHOT" \
+          .
+
+  - name: gcr.io/cloud-builders/docker
+    id: Push Docker Snapshot Image
+    entrypoint: bash
+    args:
+      - -ceu
+      - |
+        BRANCH_SAFE="$$(echo "${BRANCH_NAME:-feature}" | tr '[:upper:]' '[:lower:]' | sed -E 's#[^a-z0-9]+#-#g; s#^-+##; s#-+$##' | cut -c1-20)"
+        docker push "${_DOCKER_REGION}-docker.pkg.dev/${PROJECT_ID}/${_DOCKER_REPO}/${_IMAGE}:$${BRANCH_SAFE}-${SHORT_SHA}-SNAPSHOT"
+
 substitutions:
+  _DOCKER_REGION: europe-west2
+  _DOCKER_REPO: "fwmtg-docker-release"
+  _IMAGE: census31-fwmt-outcome-service
   _REPO_SUFFIX: fwmtg-maven-snapshot
   _REGION: europe-west2
 
