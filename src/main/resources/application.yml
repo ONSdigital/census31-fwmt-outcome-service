@@ -53,6 +53,15 @@ redis:
   password: "password"
   database: 1
 
+feature-flags:
+  outcome:
+    surveys:
+      HH: ${FEATURE_OUTCOME_HH:false}
+      SPG: ${FEATURE_OUTCOME_SPG:false}
+      CE: ${FEATURE_OUTCOME_CE:false}
+      CCS: ${FEATURE_OUTCOME_CCS:false}
+      NC: ${FEATURE_OUTCOME_NC:false}
+
 outcomeservice:
   outcomeCodeLookup:
     path: classpath:/outcomeCodeLookup.txt
