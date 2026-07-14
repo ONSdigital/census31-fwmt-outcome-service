@@ -7,7 +7,7 @@
   <parent>
     <groupId>uk.gov.ons.census.fwmt</groupId>
     <artifactId>census31-fwmt-parent</artifactId>
-    <version>27.0.1-rc.1</version>
+    <version>27.0.1</version>
     <relativePath/>
   </parent>
 
@@ -16,9 +16,9 @@
   <name>census31-fwmt-outcome-service</name>
 
   <properties>
-    <fwmt.common.version>27.0.1-rc.905645</fwmt.common.version>
-    <fwmt.events.version>27.0.1-rc.509100</fwmt.events.version>
-    <fwmt.storage.utils.version>27.0.1-rc.528060</fwmt.storage.utils.version>
+    <fwmt.common.version>27.0.1</fwmt.common.version>
+    <fwmt.events.version>27.0.1</fwmt.events.version>
+    <fwmt.storage.utils.version>27.0.1</fwmt.storage.utils.version>
   </properties>
 
   <dependencies>
@@ -86,6 +86,10 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-context</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>

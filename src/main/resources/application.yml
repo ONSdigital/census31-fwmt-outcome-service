@@ -31,10 +31,20 @@ spring:
 
 management:
   # Place /info and /health in the root
-  endpoints.web.base-path: ''
+  endpoints:
+    web:
+      base-path: ''
+      exposure:
+        include: health,info,env,refresh
   endpoint:
     health:
       show-details: always
+    env:
+      enabled: ${APP_TESTING:false}
+      post:
+        enabled: ${APP_TESTING:false}
+    refresh:
+      enabled: ${APP_TESTING:false}
 
 logging:
   profile: DEV
