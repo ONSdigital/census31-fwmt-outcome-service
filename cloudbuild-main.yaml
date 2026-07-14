@@ -138,7 +138,18 @@ steps:
       - |
         EFFECTIVE_VERSION="$(cat /workspace/effective-version.txt)"
         docker push "${_DOCKER_REGION}-docker.pkg.dev/${PROJECT_ID}/${_DOCKER_REPO}/${_IMAGE}:$${EFFECTIVE_VERSION}"
-
+  
+  - name: gcr.io/cloud-builders/gcloud
+    id: notify-build-complete
+    entrypoint: bash
+    args:
+    - -c
+    - |
+      EFFECTIVE_VERSION="$(cat /workspace/effective-version.txt)"
+      gcloud pubsub topics publish \
+      projects/c31-fwmtg-ci-prod/topics/service-build-events \
+      --message="{}" \
+      --attribute=REPO_NAME=census31-fwmt-job-service,SHORT_SHA=$${EFFECTIVE_VERSION},STATUS=SUCCESS
 substitutions:
   _DOCKER_REGION: europe-west2
   _DOCKER_REPO: "fwmtg-docker-release"
