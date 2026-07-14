@@ -149,7 +149,7 @@ steps:
       gcloud pubsub topics publish \
       projects/c31-fwmtg-ci-prod/topics/service-build-events \
       --message="{}" \
-      --attribute=REPO_NAME=census31-fwmt-job-service,SHORT_SHA=$${EFFECTIVE_VERSION},STATUS=SUCCESS
+      --attribute=REPO_NAME=census31-fwmt-outcome-service,SHORT_SHA=$${EFFECTIVE_VERSION},STATUS=SUCCESS
 substitutions:
   _DOCKER_REGION: europe-west2
   _DOCKER_REPO: "fwmtg-docker-release"
