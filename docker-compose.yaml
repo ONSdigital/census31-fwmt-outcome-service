@@ -17,6 +17,11 @@ services:
       SPRING_LIQUIBASE_PASSWORD: 'password'
       TOTALMOBILE_BASEURL: 'http://mockserver:1080/'
       RABBITMQ_HOSTNAME: 'rabbitmq'
+      FEATURE_OUTCOME_HH: '${FEATURE_OUTCOME_HH:-false}'
+      FEATURE_OUTCOME_SPG: '${FEATURE_OUTCOME_SPG:-false}'
+      FEATURE_OUTCOME_CE: '${FEATURE_OUTCOME_CE:-false}'
+      FEATURE_OUTCOME_CCS: '${FEATURE_OUTCOME_CCS:-false}'
+      FEATURE_OUTCOME_NC: '${FEATURE_OUTCOME_NC:-false}'
   postgres:
     image: 'postgres:alpine'
     ports:
