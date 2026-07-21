@@ -11,6 +11,8 @@ public class OpenApiConfig {
   @Bean
   public OpenAPI openAPI() {
     return new OpenAPI()
-        .info(new Info().title("FWMT Gateway - Outcome Service"));
+        .info(new Info()
+            .title("FWMT Gateway - Outcome Service")
+            .version("1.0.0"));
   }
 }
