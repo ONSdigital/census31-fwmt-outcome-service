@@ -48,6 +48,10 @@ management:
 
 logging:
   profile: DEV
+
+springdoc:
+  api-docs:
+    version: openapi_3_0_0
   level:
     root: WARN
     uk.gov.ons.census.fwmt: INFO
