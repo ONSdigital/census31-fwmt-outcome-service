@@ -50,8 +50,10 @@ logging:
   profile: DEV
 
 springdoc:
+  swagger-ui:
+    enabled: true
   api-docs:
-    version: openapi_3_0_0
+    enabled: true
   level:
     root: WARN
     uk.gov.ons.census.fwmt: INFO
