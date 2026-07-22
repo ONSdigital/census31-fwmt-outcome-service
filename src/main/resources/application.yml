@@ -48,12 +48,6 @@ management:
 
 logging:
   profile: DEV
-
-springdoc:
-  swagger-ui:
-    enabled: true
-  api-docs:
-    enabled: true
   level:
     root: WARN
     uk.gov.ons.census.fwmt: INFO
@@ -62,6 +56,12 @@ springdoc:
     org.hibernate: INFO
     org.apache.commons.dbcp2: INFO
     org.springframework: INFO
+
+springdoc:
+  swagger-ui:
+    enabled: true
+  api-docs:
+    enabled: true
 
 redis:
   host: "localhost"
