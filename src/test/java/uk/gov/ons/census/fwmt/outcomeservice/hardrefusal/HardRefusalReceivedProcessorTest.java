@@ -14,11 +14,11 @@ import uk.gov.ons.census.fwmt.events.component.GatewayEventManager;
 import uk.gov.ons.census.fwmt.outcomeservice.config.OutcomeSetup;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.RefusalEncryptionLookup;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.impl.HardRefusalReceivedProcessor;
-import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCache;
+import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
 import uk.gov.ons.census.fwmt.outcomeservice.helpers.HardRefusalHelper;
 import uk.gov.ons.census.fwmt.outcomeservice.message.GatewayOutcomeProducer;
-import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCacheService;
+import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCaseRecordService;
 import uk.gov.ons.census.fwmt.outcomeservice.template.TemplateCreator;
 
 import java.text.DateFormat;
@@ -36,10 +36,10 @@ public class HardRefusalReceivedProcessorTest {
   private HardRefusalReceivedProcessor hardRefusalReceivedProcessor;
 
   @Mock
-  private GatewayCacheService cacheService;
+  private GatewayCaseRecordService cacheService;
 
   @Mock
-  private GatewayCache gatewayCache;
+  private GatewayCaseRecord gatewayCache;
 
   @Mock
   private GatewayEventManager eventManager;
@@ -63,13 +63,13 @@ public class HardRefusalReceivedProcessorTest {
   private GatewayOutcomeProducer gatewayOutcomeProducer;
 
   @Captor
-  private ArgumentCaptor<GatewayCache> spiedCache;
+  private ArgumentCaptor<GatewayCaseRecord> spiedCache;
 
   @Test
   @DisplayName("Should update the cache")
   public void shouldUpdateHareRefusalCache() throws GatewayException {
     final OutcomeSuperSetDto outcome = new HardRefusalHelper().createHardRefusalOutcomne();
-    GatewayCache mockEntry = new GatewayCache();
+    GatewayCaseRecord mockEntry = new GatewayCaseRecord();
     mockEntry.setCaseId(outcome.getCaseId().toString());
     when(cacheService.getById(outcome.getCaseId().toString())).thenReturn(mockEntry);
     when(dateFormat.format(any())).thenReturn("2020-04-17T11:53:11.000+0000");
@@ -103,7 +103,7 @@ public class HardRefusalReceivedProcessorTest {
   @DisplayName("Should not throw an error when receiving outcomecode 01-03-07")
   public void shouldNotThrowAnErrorWhenReceivingOutcomeCode010307() throws GatewayException {
     final OutcomeSuperSetDto outcome = new HardRefusalHelper().createHardRefusalWithOutcomeCode010307();
-    GatewayCache mockEntry = new GatewayCache();
+    GatewayCaseRecord mockEntry = new GatewayCaseRecord();
     mockEntry.setCaseId(outcome.getCaseId().toString());
     when(cacheService.getById(outcome.getCaseId().toString())).thenReturn(mockEntry);
     when(dateFormat.format(any())).thenReturn("2020-04-17T11:53:11.000+0000");
@@ -117,7 +117,7 @@ public class HardRefusalReceivedProcessorTest {
   @DisplayName("Should not throw an error when receiving a refusal without a refusal object")
   public void shouldNotThrowAnErrorWhenReceivingARefusalWithoutARefusalObject() throws GatewayException {
     final OutcomeSuperSetDto outcome = new HardRefusalHelper().createHardRefusalWithoutRefusalObject();
-    GatewayCache mockEntry = new GatewayCache();
+    GatewayCaseRecord mockEntry = new GatewayCaseRecord();
     mockEntry.setCaseId(outcome.getCaseId().toString());
     when(cacheService.getById(outcome.getCaseId().toString())).thenReturn(mockEntry);
     when(dateFormat.format(any())).thenReturn("2020-04-17T11:53:11.000+0000");

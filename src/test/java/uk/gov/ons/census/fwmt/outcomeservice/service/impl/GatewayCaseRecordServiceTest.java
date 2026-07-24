@@ -6,24 +6,24 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCache;
-import uk.gov.ons.census.fwmt.outcomeservice.repository.GatewayCacheRepository;
+import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
+import uk.gov.ons.census.fwmt.outcomeservice.repository.GatewayCaseRecordRepository;
 
 import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
-class GatewayCacheServiceTest {
+class GatewayCaseRecordServiceTest {
 
   @InjectMocks
-  private GatewayCacheService gatewayCacheService;
+  private GatewayCaseRecordService gatewayCacheService;
 
   @Mock
-  private GatewayCacheRepository repository;
+  private GatewayCaseRecordRepository repository;
 
   @DisplayName("save flushes eagerly so same-transaction processors see the row")
   @Test
   void shouldSaveAndFlush() {
-    GatewayCache cache = GatewayCache.builder().caseId("case-1").delivered(true).build();
+    GatewayCaseRecord cache = GatewayCaseRecord.builder().caseId("case-1").delivered(true).build();
 
     gatewayCacheService.save(cache);
 

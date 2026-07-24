@@ -6,10 +6,10 @@ import uk.gov.ons.census.fwmt.common.error.GatewayException;
 import uk.gov.ons.census.fwmt.events.component.GatewayEventManager;
 import uk.gov.ons.census.fwmt.outcomeservice.config.GatewayOutcomeQueueConfig;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceProcessor;
-import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCache;
+import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
 import uk.gov.ons.census.fwmt.outcomeservice.message.GatewayOutcomeProducer;
-import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCacheService;
+import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCaseRecordService;
 import uk.gov.ons.census.fwmt.outcomeservice.template.TemplateCreator;
 
 import java.text.DateFormat;
@@ -35,7 +35,7 @@ public class NewUnitAddressLinkedProcessor implements OutcomeServiceProcessor {
   private GatewayEventManager gatewayEventManager;
 
   @Autowired
-  private GatewayCacheService gatewayCacheService;
+  private GatewayCaseRecordService gatewayCacheService;
 
   @Override
   public UUID process(OutcomeSuperSetDto outcome, UUID caseIdHolder, String type) throws GatewayException {
@@ -83,12 +83,12 @@ public class NewUnitAddressLinkedProcessor implements OutcomeServiceProcessor {
   }
 
   private void cacheData(OutcomeSuperSetDto outcome, UUID caseId, boolean isDelivered) throws GatewayException {
-    GatewayCache cache = gatewayCacheService.getById(String.valueOf(caseId));
+    GatewayCaseRecord cache = gatewayCacheService.getById(String.valueOf(caseId));
     if (cache != null) {
       throw new GatewayException(GatewayException.Fault.SYSTEM_ERROR, "Case already exists in cache: {}", caseId);
     }
 
-    gatewayCacheService.save(GatewayCache.builder()
+    gatewayCacheService.save(GatewayCaseRecord.builder()
         .caseId(String.valueOf(caseId))
         .delivered(isDelivered)
         .existsInFwmt(false)
