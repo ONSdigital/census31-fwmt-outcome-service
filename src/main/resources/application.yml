@@ -6,6 +6,9 @@ server:
 spring:
   application:
     name: census31-fwmt-outcome-service
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: false
   security:
     user:
       name: "user"

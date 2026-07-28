@@ -6,10 +6,10 @@ import uk.gov.ons.census.fwmt.common.error.GatewayException;
 import uk.gov.ons.census.fwmt.events.component.GatewayEventManager;
 import uk.gov.ons.census.fwmt.outcomeservice.config.GatewayOutcomeQueueConfig;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceProcessor;
-import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCache;
+import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
 import uk.gov.ons.census.fwmt.outcomeservice.message.GatewayOutcomeProducer;
-import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCacheService;
+import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCaseRecordService;
 import uk.gov.ons.census.fwmt.outcomeservice.template.TemplateCreator;
 
 import java.text.DateFormat;
@@ -33,7 +33,7 @@ public class PropertyListedHhProcessor implements OutcomeServiceProcessor {
   private GatewayEventManager gatewayEventManager;
 
   @Autowired
-  private GatewayCacheService gatewayCacheService;
+  private GatewayCaseRecordService gatewayCacheService;
 
   @Override
   public UUID process(OutcomeSuperSetDto outcome, UUID caseIdHolder, String type) throws GatewayException {
@@ -47,7 +47,7 @@ public class PropertyListedHhProcessor implements OutcomeServiceProcessor {
         PROPERTY_LISTED_CASE_ID, String.valueOf(newCaseId),
         ADDRESS_TYPE, "HH");
 
-    GatewayCache plCache = gatewayCacheService.getById(String.valueOf(caseId));
+    GatewayCaseRecord plCache = gatewayCacheService.getById(String.valueOf(caseId));
     cacheData(outcome, newCaseId);
 
     String eventDateTime = dateFormat.format(outcome.getEventDate());
@@ -78,7 +78,7 @@ public class PropertyListedHhProcessor implements OutcomeServiceProcessor {
   }
 
   private void cacheData(OutcomeSuperSetDto outcome, UUID newCaseId) {
-    gatewayCacheService.save(GatewayCache.builder()
+    gatewayCacheService.save(GatewayCaseRecord.builder()
         .caseId(newCaseId.toString())
         .existsInFwmt(false)
         .accessInfo(outcome.getAccessInfo())

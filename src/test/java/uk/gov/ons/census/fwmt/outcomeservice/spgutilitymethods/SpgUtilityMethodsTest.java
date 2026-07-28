@@ -7,8 +7,8 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCache;
-import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCacheService;
+import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
+import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCaseRecordService;
 import uk.gov.ons.census.fwmt.outcomeservice.service.impl.SwitchCaseIdService;
 import static uk.gov.ons.census.fwmt.outcomeservice.util.SpgUtilityMethods.regionLookup;
 

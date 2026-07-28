@@ -16,11 +16,11 @@ import uk.gov.ons.census.fwmt.common.error.GatewayException;
 import uk.gov.ons.census.fwmt.events.component.GatewayEventManager;
 import uk.gov.ons.census.fwmt.outcomeservice.config.OutcomeSetup;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.impl.UpdateResidentCountZeroProcessor;
-import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCache;
+import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
 import uk.gov.ons.census.fwmt.outcomeservice.helpers.OutcomeHelper;
 import uk.gov.ons.census.fwmt.outcomeservice.message.GatewayOutcomeProducer;
-import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCacheService;
+import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCaseRecordService;
 import uk.gov.ons.census.fwmt.outcomeservice.template.TemplateCreator;
 
 import java.text.DateFormat;
@@ -39,7 +39,7 @@ public class UpdateRessidentCountZeroProcessorTest {
   private UpdateResidentCountZeroProcessor updateResidentCountZeroProcessor;
 
   @Mock
-  private GatewayCache gatewayCache;
+  private GatewayCaseRecord gatewayCache;
 
   @Mock
   private GatewayEventManager eventManager;
@@ -60,10 +60,10 @@ public class UpdateRessidentCountZeroProcessorTest {
   private GatewayOutcomeProducer gatewayOutcomeProducer;
 
   @Mock
-  private GatewayCacheService gatewayCacheService;
+  private GatewayCaseRecordService gatewayCacheService;
 
   @Captor
-  private ArgumentCaptor<GatewayCache> spiedCache;
+  private ArgumentCaptor<GatewayCaseRecord> spiedCache;
 
   @Captor
   private ArgumentCaptor<String> outcomeEventCaptor;
@@ -90,7 +90,7 @@ public class UpdateRessidentCountZeroProcessorTest {
   public void shouldUpdateTheClosedCacheStateToUpdate() throws GatewayException, ParseException, JSONException {
     final OutcomeSuperSetDto outcome = new OutcomeHelper().createUpdateResidentCountZero();
     when(dateFormat.format(any())).thenReturn("2020-04-17T11:53:11.000+0000");
-    GatewayCache gatewayCache = new GatewayCache();
+    GatewayCaseRecord gatewayCache = new GatewayCaseRecord();
     gatewayCache.setOriginalCaseId(outcome.getCaseId().toString());
     gatewayCache.setLastActionInstruction("CANCEL");
     when(gatewayCacheService.getById(anyString())).thenReturn(gatewayCache);

@@ -17,7 +17,7 @@ import uk.gov.ons.census.fwmt.outcomeservice.converter.impl.NewAddressReportedPr
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
 import uk.gov.ons.census.fwmt.outcomeservice.helpers.OutcomeHelper;
 import uk.gov.ons.census.fwmt.outcomeservice.message.GatewayOutcomeProducer;
-import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCacheService;
+import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCaseRecordService;
 
 import java.text.DateFormat;
 
@@ -32,7 +32,7 @@ public class NewAddressReportedTemplateTest {
   private NewAddressReportedProcessor newAddressReportedProcessor;
 
   @Mock
-  private GatewayCacheService cacheService;
+  private GatewayCaseRecordService cacheService;
 
   @Mock
   private GatewayEventManager eventManager;

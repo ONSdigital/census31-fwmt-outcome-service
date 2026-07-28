@@ -8,12 +8,12 @@ import uk.gov.ons.census.fwmt.events.component.GatewayEventManager;
 import uk.gov.ons.census.fwmt.outcomeservice.config.GatewayOutcomeQueueConfig;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceProcessor;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.QuestionnaireTypeLookup;
-import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCache;
-import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCache.GatewayCacheBuilder;
+import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
+import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord.GatewayCaseRecordBuilder;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.FulfilmentRequestDto;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
 import uk.gov.ons.census.fwmt.outcomeservice.message.GatewayOutcomeProducer;
-import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCacheService;
+import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCaseRecordService;
 import uk.gov.ons.census.fwmt.outcomeservice.template.TemplateCreator;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.common.product.model.Product;
@@ -45,7 +45,7 @@ public class FulfilmentRequestProcessor implements OutcomeServiceProcessor {
   private GatewayEventManager gatewayEventManager;
 
   @Autowired
-  private GatewayCacheService gatewayCacheService;
+  private GatewayCaseRecordService gatewayCacheService;
 
   @Override
   public UUID process(OutcomeSuperSetDto outcome, UUID caseIdHolder, String type) throws GatewayException {
@@ -152,9 +152,9 @@ public class FulfilmentRequestProcessor implements OutcomeServiceProcessor {
   }
 
   private void cacheData(String caseId, String individualCaseId) {
-    GatewayCache cache = gatewayCacheService.getById(caseId);
-    GatewayCacheBuilder builder ;
-    if (cache == null) builder = GatewayCache.builder();
+    GatewayCaseRecord cache = gatewayCacheService.getById(caseId);
+    GatewayCaseRecordBuilder builder ;
+    if (cache == null) builder = GatewayCaseRecord.builder();
     else builder = cache.toBuilder();
 
     if (!individualCaseId.equals("")) {

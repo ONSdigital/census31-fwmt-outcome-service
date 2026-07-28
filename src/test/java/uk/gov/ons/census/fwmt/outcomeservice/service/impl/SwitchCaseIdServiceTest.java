@@ -6,7 +6,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCache;
+import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
 
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -18,11 +18,11 @@ public class SwitchCaseIdServiceTest {
     private SwitchCaseIdService switchCaseIdService;
 
     @Mock
-    private GatewayCacheService gatewayCacheService;
+    private GatewayCaseRecordService gatewayCacheService;
 
     @Test
     public void shouldOverrideTMCaseIdWithRMOriginalCaseId() {
-        GatewayCache gatewayCache = new GatewayCache();
+        GatewayCaseRecord gatewayCache = new GatewayCaseRecord();
         gatewayCache.setOriginalCaseId("a48bf28e-e7f4-4467-a9fb-e000b6a55676");
 
         when(gatewayCacheService.getById(anyString())).thenReturn(gatewayCache);

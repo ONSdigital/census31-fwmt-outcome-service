@@ -6,12 +6,12 @@ import uk.gov.ons.census.fwmt.common.error.GatewayException;
 import uk.gov.ons.census.fwmt.events.component.GatewayEventManager;
 import uk.gov.ons.census.fwmt.outcomeservice.config.GatewayOutcomeQueueConfig;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceProcessor;
-import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCache;
-import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCache.GatewayCacheBuilder;
+import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
+import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord.GatewayCaseRecordBuilder;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.FulfilmentRequestDto;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
 import uk.gov.ons.census.fwmt.outcomeservice.message.GatewayOutcomeProducer;
-import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCacheService;
+import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCaseRecordService;
 import uk.gov.ons.census.fwmt.outcomeservice.template.TemplateCreator;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -37,7 +37,7 @@ public class LinkedQidProcessor implements OutcomeServiceProcessor {
   private GatewayEventManager gatewayEventManager;
 
   @Autowired
-  private GatewayCacheService gatewayCacheService;
+  private GatewayCaseRecordService gatewayCacheService;
 
   private boolean isQuestionnaireLinked(FulfilmentRequestDto fulfilmentRequest) {
     return (fulfilmentRequest.getQuestionnaireID() != null);
@@ -80,9 +80,9 @@ public class LinkedQidProcessor implements OutcomeServiceProcessor {
   }
 
   private void cacheData(UUID caseId) {
-    GatewayCache cache = gatewayCacheService.getById(String.valueOf(caseId));
-    GatewayCacheBuilder builder;
-    if (cache == null) builder = GatewayCache.builder();
+    GatewayCaseRecord cache = gatewayCacheService.getById(String.valueOf(caseId));
+    GatewayCaseRecordBuilder builder;
+    if (cache == null) builder = GatewayCaseRecord.builder();
     else builder = cache.toBuilder();
 
     gatewayCacheService.save(builder

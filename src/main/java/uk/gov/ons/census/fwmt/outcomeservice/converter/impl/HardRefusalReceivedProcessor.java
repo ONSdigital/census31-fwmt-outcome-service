@@ -10,10 +10,10 @@ import uk.gov.ons.census.fwmt.outcomeservice.config.GatewayOutcomeQueueConfig;
 import uk.gov.ons.census.fwmt.outcomeservice.config.OutcomeSetup;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceProcessor;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.RefusalEncryptionLookup;
-import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCache;
+import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
 import uk.gov.ons.census.fwmt.outcomeservice.message.GatewayOutcomeProducer;
-import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCacheService;
+import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCaseRecordService;
 import uk.gov.ons.census.fwmt.outcomeservice.template.TemplateCreator;
 import uk.gov.ons.census.fwmt.outcomeservice.util.EncryptNames;
 
@@ -49,7 +49,7 @@ public class HardRefusalReceivedProcessor implements OutcomeServiceProcessor {
   private OutcomeSetup outcomeSetup;
 
   @Autowired
-  private GatewayCacheService gatewayCacheService;
+  private GatewayCaseRecordService gatewayCacheService;
 
   @Autowired
   private RefusalEncryptionLookup refusalEncryptionLookup;
@@ -75,7 +75,7 @@ public class HardRefusalReceivedProcessor implements OutcomeServiceProcessor {
 
     UUID caseId = (caseIdHolder != null) ? caseIdHolder : outcome.getCaseId();
 
-    GatewayCache cache = gatewayCacheService.getById(String.valueOf(caseId));
+    GatewayCaseRecord cache = gatewayCacheService.getById(String.valueOf(caseId));
 
     cacheData(outcome, caseId, type, cache);
 
@@ -88,7 +88,7 @@ public class HardRefusalReceivedProcessor implements OutcomeServiceProcessor {
     correctType = type.equals("HH") || type.equals("NC");
 
     if (refusalCodes != null && correctType && outcome.getRefusal() != null) {
-      isHouseHolder = outcome.getRefusal().isHouseholder();
+      isHouseHolder = outcome.getRefusal().getHouseholder();
       encryptedTitle = outcome.getRefusal().getTitle() != null && !outcome.getRefusal().getTitle().isBlank() ?
           returnEncryptedNames(outcome.getRefusal().getTitle()) : "";
 
@@ -153,13 +153,13 @@ public class HardRefusalReceivedProcessor implements OutcomeServiceProcessor {
     return Base64.getEncoder().encodeToString(formatNames.getBytes(Charset.defaultCharset()));
   }
 
-  private void cacheData(OutcomeSuperSetDto outcome, UUID caseId, String type, GatewayCache cache)
+  private void cacheData(OutcomeSuperSetDto outcome, UUID caseId, String type, GatewayCaseRecord cache)
       throws GatewayException {
     int typeCache = type.equals("CE") ? 1 : 10;
     String dangerousCareCode;
     String updateCareCodes;
     if (outcome.getRefusal() != null && type.equals("HH") && !outcome.getOutcomeCode().equals("01-03-07")) {
-      dangerousCareCode = outcome.getRefusal().isDangerous()  ? "Dangerous address" : "No safety issues";
+      dangerousCareCode = outcome.getRefusal().getDangerous()  ? "Dangerous address" : "No safety issues";
       updateCareCodes = outcome.getCareCodes() != null ? OutcomeSuperSetDto.careCodesToText(outcome.getCareCodes()) + ", " + dangerousCareCode :
           dangerousCareCode;
     } else {
