@@ -25,7 +25,7 @@ import uk.gov.ons.census.fwmt.outcomeservice.messaging.OutcomePreprocessingPubli
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class  PubSubOutcomePreprocessingPublisher implements OutcomePreprocessingPublisher {
+public class PubSubOutcomePreprocessingPublisher implements OutcomePreprocessingPublisher {
 
   private final PubSubTemplate pubSubTemplate;
   private final OutcomePreprocessingJsonCodec codec;
