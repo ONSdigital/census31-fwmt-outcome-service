@@ -96,7 +96,7 @@ public class HardRefusalReceivedProcessorTest {
   @DisplayName("IsDangerous field should return false if null")
   public void shouldReturnIsDangerousAsFalseIfNull() {
     final OutcomeSuperSetDto outcome = new HardRefusalHelper().createHardRefusalOutcomneWithNullDangerous();
-    Assertions.assertEquals(false, outcome.getRefusal().isDangerous());
+    Assertions.assertEquals(false, outcome.getRefusal().getDangerous());
   }
 
   @Test
