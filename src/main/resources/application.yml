@@ -62,6 +62,7 @@ logging:
 springdoc:
   swagger-ui:
     enabled: true
+    url: /v3/api-docs.yaml
   api-docs:
     enabled: true
 
@@ -95,8 +96,6 @@ outcomeservice:
     fwmtPublicKey: "classpath:/testPublicKey.public"
     midlPublicKey: "classpath:/testSecondaryPublicKey.public"
     directory: "file://${home}/acceptance/data/"
-
-
 
 app:
   testing: false
