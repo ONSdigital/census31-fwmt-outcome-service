@@ -27,7 +27,6 @@ spring:
         enabled: false
       pubsub:
         enabled: true
-        emulator-host: ${PUBSUB_EMULATOR_HOST:localhost:8085}
 
 management:
   # Place /info and /health in the root
