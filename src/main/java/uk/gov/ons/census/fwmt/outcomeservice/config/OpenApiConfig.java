@@ -16,7 +16,7 @@ public class OpenApiConfig {
   public OpenAPI openAPI() {
     String serverUrl = getServerUrl();
     return new OpenAPI()
-        .openapi("3.0.0")
+        .openapi("3.2.0")
         .info(new Info()
             .title("FWMT Gateway - Outcome Service")
             .version("1.0.0"))
