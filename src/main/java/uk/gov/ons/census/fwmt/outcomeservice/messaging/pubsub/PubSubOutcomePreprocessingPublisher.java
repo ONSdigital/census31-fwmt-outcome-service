@@ -106,18 +106,8 @@ public class PubSubOutcomePreprocessingPublisher implements OutcomePreprocessing
   }
 
   private void publish(Object payload, boolean withTimestamp) {
-    try {
-      PubsubMessage message = codec.toPubsubMessage(payload, withTimestamp);
-      log.info("Publishing outcome preprocessing message to topic {} - MessageId will follow", outcomePreprocessingTopic);
-      pubSubTemplate.publish(outcomePreprocessingTopic, message).thenAccept(messageId -> {
-        log.info("Successfully published to topic {} with messageId: {}", outcomePreprocessingTopic, messageId);
-      }).exceptionally(throwable -> {
-        log.error("Failed to publish to topic {}: {}", outcomePreprocessingTopic, throwable.getMessage(), throwable);
-        return null;
-      });
-    } catch (Exception e) {
-      log.error("Error preparing message for topic {}: {}", outcomePreprocessingTopic, e.getMessage(), e);
-      throw e;
-    }
+    PubsubMessage message = codec.toPubsubMessage(payload, withTimestamp);
+    log.debug("Publishing outcome preprocessing message to topic {}", outcomePreprocessingTopic);
+    pubSubTemplate.publish(outcomePreprocessingTopic, message);
   }
 }
