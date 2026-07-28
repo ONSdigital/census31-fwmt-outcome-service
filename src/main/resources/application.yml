@@ -62,7 +62,7 @@ logging:
 springdoc:
   swagger-ui:
     enabled: true
-    url: /v3/api-docs.yml
+    url: /v3/api-docs.yaml
   api-docs:
     enabled: true
 
