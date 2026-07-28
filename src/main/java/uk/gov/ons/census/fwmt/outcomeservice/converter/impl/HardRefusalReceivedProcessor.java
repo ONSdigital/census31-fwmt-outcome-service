@@ -88,7 +88,7 @@ public class HardRefusalReceivedProcessor implements OutcomeServiceProcessor {
     correctType = type.equals("HH") || type.equals("NC");
 
     if (refusalCodes != null && correctType && outcome.getRefusal() != null) {
-      isHouseHolder = outcome.getRefusal().isHouseholder();
+      isHouseHolder = outcome.getRefusal().getHouseholder();
       encryptedTitle = outcome.getRefusal().getTitle() != null && !outcome.getRefusal().getTitle().isBlank() ?
           returnEncryptedNames(outcome.getRefusal().getTitle()) : "";
 
@@ -159,7 +159,7 @@ public class HardRefusalReceivedProcessor implements OutcomeServiceProcessor {
     String dangerousCareCode;
     String updateCareCodes;
     if (outcome.getRefusal() != null && type.equals("HH") && !outcome.getOutcomeCode().equals("01-03-07")) {
-      dangerousCareCode = outcome.getRefusal().isDangerous()  ? "Dangerous address" : "No safety issues";
+      dangerousCareCode = outcome.getRefusal().getDangerous()  ? "Dangerous address" : "No safety issues";
       updateCareCodes = outcome.getCareCodes() != null ? OutcomeSuperSetDto.careCodesToText(outcome.getCareCodes()) + ", " + dangerousCareCode :
           dangerousCareCode;
     } else {
