@@ -75,11 +75,11 @@ redis:
 feature-flags:
   outcome:
     surveys:
-      HH: ${FEATURE_OUTCOME_HH:false}
-      SPG: ${FEATURE_OUTCOME_SPG:false}
-      CE: ${FEATURE_OUTCOME_CE:false}
-      CCS: ${FEATURE_OUTCOME_CCS:false}
-      NC: ${FEATURE_OUTCOME_NC:false}
+      HH: true
+      SPG: false
+      CE: true
+      CCS: false
+      NC: false
 
 outcomeservice:
   outcomeCodeLookup:
