@@ -3,7 +3,6 @@ package uk.gov.ons.census.fwmt.outcomeservice.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,9 +15,11 @@ import uk.gov.ons.census.fwmt.common.data.household.HHOutcome;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
 import uk.gov.ons.census.fwmt.events.component.GatewayEventManager;
 import uk.gov.ons.census.fwmt.outcomeservice.messaging.OutcomePreprocessingPublisher;
+import uk.gov.ons.census.fwmt.outcomeservice.openapi.SurveyFlaggedEndpoint;
+import uk.gov.ons.census.fwmt.outcomeservice.service.OutcomeFeatureFlagGuard;
 
 @RestController
-@ConditionalOnProperty(name = "feature-flags.outcome.surveys.HH", havingValue = "true", matchIfMissing = false)
+@SurveyFlaggedEndpoint("HH")
 @Tag(name = "HH Outcomes", description = "HH survey outcome endpoints")
 public class HhOutcomeController {
 
@@ -32,10 +33,16 @@ public class HhOutcomeController {
   @Autowired
   private OutcomePreprocessingPublisher outcomePreprocessingProducer;
 
+  @Autowired
+  private OutcomeFeatureFlagGuard featureFlagGuard;
+
   @Operation(summary = "Post a HH survey outcome to the FWMT Gateway")
   @PostMapping(value = "/hhOutcome/{caseID}", produces = {"application/json"})
   public ResponseEntity<Void> hhOutcomeResponse(
       @PathVariable("caseID") String caseID, @RequestBody HHOutcome hhOutcome) throws GatewayException {
+    if (!featureFlagGuard.isEnabled("HH")) {
+      return featureFlagGuard.handleDisabledSurvey("HH", "/hhOutcome/{caseID}");
+    }
     gatewayEventManager.triggerEvent(caseID, COMET_HH_OUTCOME_RECEIVED,
         "transactionId", hhOutcome.getTransactionId().toString(),
         "Survey type", "HH",
@@ -50,6 +57,9 @@ public class HhOutcomeController {
   @Operation(summary = "Post a HH survey new split address outcome to the FWMT Gateway")
   @PostMapping(value = "/hhOutcome/splitAddress/new", produces = {"application/json"})
   public ResponseEntity<Void> hhNewSplitAddress(@RequestBody HHNewSplitAddress hhNewSplitAddress) throws GatewayException {
+    if (!featureFlagGuard.isEnabled("HH")) {
+      return featureFlagGuard.handleDisabledSurvey("HH", "/hhOutcome/splitAddress/new");
+    }
     gatewayEventManager.triggerEvent("N/A", COMET_HH_SPLITADDRESS_RECEIVED,
         "transactionId", hhNewSplitAddress.getTransactionId().toString(),
         "Survey type", "HH",
@@ -64,6 +74,9 @@ public class HhOutcomeController {
   @Operation(summary = "Post a HH survey new standalone address outcome to the FWMT Gateway")
   @PostMapping(value = "/hhOutcome/standaloneAddress/new", produces = {"application/json"})
   public ResponseEntity<Void> hhNewStandalone(@RequestBody HHNewStandaloneAddress hhNewStandaloneAddress) throws GatewayException {
+    if (!featureFlagGuard.isEnabled("HH")) {
+      return featureFlagGuard.handleDisabledSurvey("HH", "/hhOutcome/standaloneAddress/new");
+    }
     gatewayEventManager.triggerEvent("N/A", COMET_HH_STANDALONE_RECEIVED,
         "transactionId", hhNewStandaloneAddress.getTransactionId().toString(),
         "Survey type", "HH",

@@ -3,7 +3,6 @@ package uk.gov.ons.census.fwmt.outcomeservice.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,11 +14,13 @@ import uk.gov.ons.census.fwmt.common.data.ce.CENewUnitAddress;
 import uk.gov.ons.census.fwmt.common.data.ce.CEOutcome;
 import uk.gov.ons.census.fwmt.events.component.GatewayEventManager;
 import uk.gov.ons.census.fwmt.outcomeservice.messaging.OutcomePreprocessingPublisher;
+import uk.gov.ons.census.fwmt.outcomeservice.openapi.SurveyFlaggedEndpoint;
+import uk.gov.ons.census.fwmt.outcomeservice.service.OutcomeFeatureFlagGuard;
 
 import java.util.UUID;
 
 @RestController
-@ConditionalOnProperty(name = "feature-flags.outcome.surveys.CE", havingValue = "true", matchIfMissing = false)
+@SurveyFlaggedEndpoint("CE")
 @Tag(name = "CE Outcomes", description = "CE survey outcome endpoints")
 public class CeOutcomeController {
 
@@ -33,10 +34,16 @@ public class CeOutcomeController {
   @Autowired
   private OutcomePreprocessingPublisher outcomePreprocessingProducer;
 
+  @Autowired
+  private OutcomeFeatureFlagGuard featureFlagGuard;
+
   @Operation(summary = "Post a CE survey outcome to the FWMT Gateway")
   @PostMapping(value = "/ceOutcome/{caseID}", produces = {"application/json"})
   public ResponseEntity<Void> ceOutcomeResponse(
       @PathVariable("caseID") String caseId, @RequestBody CEOutcome ceOutcome) {
+    if (!featureFlagGuard.isEnabled("CE")) {
+      return featureFlagGuard.handleDisabledSurvey("CE", "/ceOutcome/{caseID}");
+    }
     gatewayEventManager.triggerEvent(caseId, COMET_CE_OUTCOME_RECEIVED,
         "transactionId", ceOutcome.getTransactionId().toString(),
         "Primary Outcome", ceOutcome.getPrimaryOutcomeDescription(),
@@ -51,6 +58,9 @@ public class CeOutcomeController {
   @Operation(summary = "Post a CE survey new unit address outcome to the FWMT Gateway")
   @PostMapping(value = "/ceOutcome/unitAddress/new", produces = {"application/json"})
   public ResponseEntity<Void> ceNewUnitAddress(@RequestBody CENewUnitAddress newUnitAddress) {
+    if (!featureFlagGuard.isEnabled("CE")) {
+      return featureFlagGuard.handleDisabledSurvey("CE", "/ceOutcome/unitAddress/new");
+    }
     gatewayEventManager.triggerEvent("N/A", COMET_CE_UNITADDRESS_OUTCOME_RECEIVED,
         "transactionId", newUnitAddress.getTransactionId().toString(),
         "Site case id", String.valueOf(newUnitAddress.getSiteCaseId()),
@@ -65,6 +75,9 @@ public class CeOutcomeController {
   @Operation(summary = "Post a CE survey new standalone address outcome to the FWMT Gateway")
   @PostMapping(value = "/ceOutcome/standaloneAddress/new", produces = {"application/json"})
   public ResponseEntity<Void> ceNewStandalone(@RequestBody CENewStandaloneAddress newStandaloneAddress) {
+    if (!featureFlagGuard.isEnabled("CE")) {
+      return featureFlagGuard.handleDisabledSurvey("CE", "/ceOutcome/standaloneAddress/new");
+    }
     gatewayEventManager.triggerEvent("N/A", COMET_CE_STANDALONE_OUTCOME_RECEIVED,
         "transactionId", newStandaloneAddress.getTransactionId().toString(),
         "Survey type", "CE",
