@@ -3,7 +3,6 @@ package uk.gov.ons.census.fwmt.outcomeservice.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,11 +14,13 @@ import uk.gov.ons.census.fwmt.common.data.ccs.CCSPropertyListingOutcome;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
 import uk.gov.ons.census.fwmt.events.component.GatewayEventManager;
 import uk.gov.ons.census.fwmt.outcomeservice.messaging.OutcomePreprocessingPublisher;
+import uk.gov.ons.census.fwmt.outcomeservice.openapi.SurveyFlaggedEndpoint;
+import uk.gov.ons.census.fwmt.outcomeservice.service.OutcomeFeatureFlagGuard;
 
 import java.util.UUID;
 
 @RestController
-@ConditionalOnProperty(name = "feature-flags.outcome.surveys.CCS", havingValue = "true", matchIfMissing = false)
+@SurveyFlaggedEndpoint("CCS")
 @Tag(name = "CCS Outcomes", description = "CCS survey outcome endpoints")
 public class CcsOutcomeController {
 
@@ -32,9 +33,15 @@ public class CcsOutcomeController {
   @Autowired
   private OutcomePreprocessingPublisher outcomePreprocessingProducer;
 
+  @Autowired
+  private OutcomeFeatureFlagGuard featureFlagGuard;
+
   @Operation(summary = "Post a CCS property listing outcome to the FWMT Gateway")
   @PostMapping(value = "/ccsPropertyListingOutcome", produces = {"application/json"})
   public ResponseEntity<Void> ccsPropertyListing(@RequestBody CCSPropertyListingOutcome ccsPropertyListingOutcome) throws GatewayException {
+    if (!featureFlagGuard.isEnabled("CCS")) {
+      return featureFlagGuard.handleDisabledSurvey("CCS", "/ccsPropertyListingOutcome");
+    }
     gatewayEventManager.triggerEvent(String.valueOf(ccsPropertyListingOutcome.getCaseId()), COMET_CCS_PL_RECEIVED,
         "transactionId", ccsPropertyListingOutcome.getTransactionId().toString(),
         "Survey type", "CCS PL",
@@ -50,6 +57,9 @@ public class CcsOutcomeController {
   @PostMapping(value = "/ccsInterviewOutcome/{caseID}", produces = {"application/json"})
   public ResponseEntity<Void> ccsInterview(
       @PathVariable("caseID") String caseID, @RequestBody CCSInterviewOutcome ccsInterviewOutcome) throws GatewayException {
+    if (!featureFlagGuard.isEnabled("CCS")) {
+      return featureFlagGuard.handleDisabledSurvey("CCS", "/ccsInterviewOutcome/{caseID}");
+    }
     gatewayEventManager.triggerEvent(caseID, COMET_CCS_INT_RECEIVED,
         "transactionId", ccsInterviewOutcome.getTransactionId().toString(),
         "Survey type", "CCS INT",

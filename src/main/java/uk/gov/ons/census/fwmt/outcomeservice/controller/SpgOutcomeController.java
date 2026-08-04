@@ -3,7 +3,6 @@ package uk.gov.ons.census.fwmt.outcomeservice.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,11 +14,13 @@ import uk.gov.ons.census.fwmt.common.data.spg.SPGNewUnitAddress;
 import uk.gov.ons.census.fwmt.common.data.spg.SPGOutcome;
 import uk.gov.ons.census.fwmt.events.component.GatewayEventManager;
 import uk.gov.ons.census.fwmt.outcomeservice.messaging.OutcomePreprocessingPublisher;
+import uk.gov.ons.census.fwmt.outcomeservice.openapi.SurveyFlaggedEndpoint;
+import uk.gov.ons.census.fwmt.outcomeservice.service.OutcomeFeatureFlagGuard;
 
 import java.util.UUID;
 
 @RestController
-@ConditionalOnProperty(name = "feature-flags.outcome.surveys.SPG", havingValue = "true", matchIfMissing = false)
+@SurveyFlaggedEndpoint("SPG")
 @Tag(name = "SPG Outcomes", description = "SPG survey outcome endpoints")
 public class SpgOutcomeController {
 
@@ -33,10 +34,16 @@ public class SpgOutcomeController {
   @Autowired
   private OutcomePreprocessingPublisher outcomePreprocessingProducer;
 
+  @Autowired
+  private OutcomeFeatureFlagGuard featureFlagGuard;
+
   @Operation(summary = "Post a SPG survey outcome to the FWMT Gateway")
   @PostMapping(value = "/spgOutcome/{caseID}", produces = {"application/json"})
   public ResponseEntity<Void> spgOutcomeResponse(
       @PathVariable("caseID") String caseId, @RequestBody SPGOutcome spgOutcome) {
+    if (!featureFlagGuard.isEnabled("SPG")) {
+      return featureFlagGuard.handleDisabledSurvey("SPG", "/spgOutcome/{caseID}");
+    }
     gatewayEventManager.triggerEvent(caseId, COMET_SPG_OUTCOME_RECEIVED,
         "transactionId", spgOutcome.getTransactionId().toString(),
         "Survey type", "SPG",
@@ -52,6 +59,9 @@ public class SpgOutcomeController {
   @Operation(summary = "Post a SPG survey new unit address outcome to the FWMT Gateway")
   @PostMapping(value = "/spgOutcome/unitAddress/new", produces = {"application/json"})
   public ResponseEntity<Void> spgNewUnitAddress(@RequestBody SPGNewUnitAddress newUnitAddress) {
+    if (!featureFlagGuard.isEnabled("SPG")) {
+      return featureFlagGuard.handleDisabledSurvey("SPG", "/spgOutcome/unitAddress/new");
+    }
     gatewayEventManager.triggerEvent("N/A", COMET_SPG_UNITADDRESS_OUTCOME_RECEIVED,
         "transactionId", newUnitAddress.getTransactionId().toString(),
         "Survey type", "SPG",
@@ -66,6 +76,9 @@ public class SpgOutcomeController {
   @Operation(summary = "Post a SPG survey new standalone address outcome to the FWMT Gateway")
   @PostMapping(value = "/spgOutcome/standaloneAddress/new", produces = {"application/json"})
   public ResponseEntity<Void> spgNewStandalone(@RequestBody SPGNewStandaloneAddress newStandaloneAddress) {
+    if (!featureFlagGuard.isEnabled("SPG")) {
+      return featureFlagGuard.handleDisabledSurvey("SPG", "/spgOutcome/standaloneAddress/new");
+    }
     gatewayEventManager.triggerEvent("N/A", COMET_SPG_STANDALONE_OUTCOME_RECEIVED,
         "transactionId", newStandaloneAddress.getTransactionId().toString(),
         "Survey type", "SPG",
