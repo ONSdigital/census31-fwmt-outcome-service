@@ -21,7 +21,6 @@ To run:
 
 ## tm-outcome
 
-
 ![](tm-outcome.png "tm - census - outcome - mapping")
 
 ## Copyright
