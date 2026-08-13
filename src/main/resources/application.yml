@@ -3,6 +3,9 @@ server:
   tomcat:
     max-threads: 200
     min-spare-threads: 10
+
+version: ${project.version}
+
 spring:
   application:
     name: census31-fwmt-outcome-service
