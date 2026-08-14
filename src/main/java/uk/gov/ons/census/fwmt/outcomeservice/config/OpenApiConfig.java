@@ -3,6 +3,7 @@ package uk.gov.ons.census.fwmt.outcomeservice.config;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.servers.Server;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -12,6 +13,9 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 @Configuration
 public class OpenApiConfig {
 
+  @Value("${version}")
+  String version;
+
   @Bean
   public OpenAPI openAPI() {
     String serverUrl = getServerUrl();
@@ -19,7 +23,7 @@ public class OpenApiConfig {
         .openapi("3.2.0")
         .info(new Info()
             .title("FWMT Gateway - Outcome Service")
-            .version("1.0.0"))
+            .version(version))
         .addServersItem(new Server()
             .url(serverUrl)
             .description("Default Server"));
