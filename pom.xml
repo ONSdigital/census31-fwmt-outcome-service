@@ -151,6 +151,13 @@
   </dependencies>
 
   <build>
+    <extensions>
+      <extension>
+        <groupId>com.google.cloud.artifactregistry</groupId>
+        <artifactId>artifactregistry-maven-wagon</artifactId>
+        <version>2.2.0</version>
+      </extension>
+    </extensions>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -192,6 +199,12 @@
         <artifactId>spotbugs-maven-plugin</artifactId>
       </plugin>
     </plugins>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
   </build>
 
   <profiles>
@@ -202,4 +215,5 @@
       <id>spotbugs</id>
     </profile>
   </profiles>
+
 </project>
