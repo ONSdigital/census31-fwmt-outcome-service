@@ -13,7 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
-import uk.gov.ons.census.fwmt.events.component.GatewayEventManager;
+import uk.gov.ons.census.fwmt.common.events.component.GatewayEventManager;
 import uk.gov.ons.census.fwmt.outcomeservice.config.OutcomeSetup;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.impl.UpdateResidentCountOneProcessor;
 import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;

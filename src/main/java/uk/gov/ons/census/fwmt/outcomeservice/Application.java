@@ -13,8 +13,8 @@ import org.springframework.retry.annotation.EnableRetry;
 @SpringBootApplication
 @EnableRetry
 @EnableIntegration
-@ComponentScan({"uk.gov.ons.census.fwmt.outcomeservice", "uk.gov.ons.census.fwmt.events",
-    "uk.gov.ons.ctp.integration.common.product", "uk.gov.census.ffa.storage.utils"})
+@ComponentScan({"uk.gov.ons.census.fwmt.outcomeservice", "uk.gov.ons.census.fwmt.common.events",
+    "uk.gov.ons.ctp.integration.common.product", "uk.gov.ons.census.fwmt.common.storageutils"})
 public class Application {
 
   public static final String APPLICATION_NAME = "FWMT Gateway - Outcome Service";

@@ -5,10 +5,10 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import uk.gov.ons.census.fwmt.events.component.GatewayEventManager;
-import uk.gov.ons.census.fwmt.events.producer.GatewayEventProducer;
-import uk.gov.ons.census.fwmt.events.producer.GatewayLoggingEventProducer;
-import uk.gov.ons.census.fwmt.events.producer.PubSubGatewayEventProducer;
+import uk.gov.ons.census.fwmt.common.events.component.GatewayEventManager;
+import uk.gov.ons.census.fwmt.common.events.producer.GatewayEventProducer;
+import uk.gov.ons.census.fwmt.common.events.producer.GatewayLoggingEventProducer;
+import uk.gov.ons.census.fwmt.common.events.producer.PubSubGatewayEventProducer;
 import uk.gov.ons.census.fwmt.outcomeservice.Application;
 
 import java.util.Arrays;

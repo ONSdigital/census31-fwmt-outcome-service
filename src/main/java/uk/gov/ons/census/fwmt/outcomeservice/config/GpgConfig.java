@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import uk.gov.census.ffa.storage.utils.StorageUtils;
+import uk.gov.ons.census.fwmt.common.storageutils.StorageUtils;
 
 @SuppressFBWarnings(value = {"DM_EXIT", "RCN_REDUNDANT_NULLCHECK_WOULD_HAVE_BEEN_A_NPE"},
     justification = "App shouldnt start up; try-with-resources on storage stream")

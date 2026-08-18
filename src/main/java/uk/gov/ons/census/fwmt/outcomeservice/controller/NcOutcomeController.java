@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.ons.census.fwmt.common.data.nc.NCOutcome;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
-import uk.gov.ons.census.fwmt.events.component.GatewayEventManager;
+import uk.gov.ons.census.fwmt.common.events.component.GatewayEventManager;
 import uk.gov.ons.census.fwmt.outcomeservice.messaging.OutcomePreprocessingPublisher;
 import uk.gov.ons.census.fwmt.outcomeservice.openapi.SurveyFlaggedEndpoint;
 import uk.gov.ons.census.fwmt.outcomeservice.service.OutcomeFeatureFlagGuard;

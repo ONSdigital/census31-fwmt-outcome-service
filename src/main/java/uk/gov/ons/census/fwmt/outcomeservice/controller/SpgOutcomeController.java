@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import uk.gov.ons.census.fwmt.common.data.spg.SPGNewStandaloneAddress;
 import uk.gov.ons.census.fwmt.common.data.spg.SPGNewUnitAddress;
 import uk.gov.ons.census.fwmt.common.data.spg.SPGOutcome;
-import uk.gov.ons.census.fwmt.events.component.GatewayEventManager;
+import uk.gov.ons.census.fwmt.common.events.component.GatewayEventManager;
 import uk.gov.ons.census.fwmt.outcomeservice.messaging.OutcomePreprocessingPublisher;
 import uk.gov.ons.census.fwmt.outcomeservice.openapi.SurveyFlaggedEndpoint;
 import uk.gov.ons.census.fwmt.outcomeservice.service.OutcomeFeatureFlagGuard;
