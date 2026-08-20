@@ -1,6 +1,5 @@
 > **THIS REPO IS SEEDED FROM 2021 CODE AND AS SUCH CURRENTLY NEEDS MODERNISATION!** (see also [SEEDING.md](SEEDING.md).)
 
-[![Build Status](https://travis-ci.com/ONSdigital/census31-fwmt-outcome-service.svg?branch=master)](https://travis-ci.com/ONSdigital/census31-fwmt-outcome-service) [![codecov](https://codecov.io/gh/ONSdigital/census31-fwmt-outcome-service/branch/master/graph/badge.svg)](https://codecov.io/gh/ONSdigital/census31-fwmt-outcome-service) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/1bad894364ed49f29a41193cf9e1e8ff)](https://www.codacy.com/app/ONSDigital_FWMT/census31-fwmt-outcome-service?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ONSdigital/census31-fwmt-outcome-service&amp;utm_campaign=Badge_Grade)
 
 # census31-fwmt-outcome-service
 This service is a gateway between Total Mobile's COMET interface and FWMT outcome service.

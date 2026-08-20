@@ -18,7 +18,7 @@ import org.bouncycastle.openpgp.operator.jcajce.JcePGPDataEncryptorBuilder;
 import org.bouncycastle.openpgp.operator.jcajce.JcePublicKeyKeyEncryptionMethodGenerator;
 import org.bouncycastle.util.io.Streams;
 import org.springframework.beans.factory.annotation.Autowired;
-import uk.gov.census.ffa.storage.utils.StorageUtils;
+import uk.gov.ons.census.fwmt.common.storageutils.StorageUtils;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
 
 import java.io.ByteArrayInputStream;

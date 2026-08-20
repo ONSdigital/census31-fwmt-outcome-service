@@ -3,3 +3,11 @@ spring:
     gcp:
       pubsub:
         emulator-host: localhost:8085
+management:
+  endpoint:
+    env:
+      enabled: true
+      post:
+        enabled: true
+    refresh:
+      enabled: true

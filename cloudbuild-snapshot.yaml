@@ -86,24 +86,12 @@ steps:
     args:
       - -ceu
       - |
-        if [[ ! -f version.txt ]]; then
-          echo "ERROR: version.txt not found" >&2
-          exit 1
-        fi
-
-        BASE_VERSION="$(tr -d '\r\n' < version.txt)"
+        BASE_VERSION="$(sed 's/-Drevision=//' .mvn/maven.config | tr -d '[:space:]')"
         if [[ -z "$${BASE_VERSION}" ]]; then
-          echo "ERROR: version.txt is empty" >&2
+          echo "ERROR: could not read version from .mvn/maven.config" >&2
           exit 1
         fi
-
-        BASE_VERSION="$(echo "$${BASE_VERSION}" | sed -E 's/-SNAPSHOT$//; s/-rc\.[0-9]+$//')"
-
-        BRANCH_SAFE="$$(echo "$${BRANCH_NAME:-feature}" | tr '[:upper:]' '[:lower:]' | sed -E 's#[^a-z0-9]+#-#g; s#^-+##; s#-+$##' | cut -c1-20)"
-        SHORT_SHA_SAFE="$${SHORT_SHA:-local}"
-        EFFECTIVE_VERSION="$${BASE_VERSION}-$${BRANCH_SAFE}-$${SHORT_SHA_SAFE}-SNAPSHOT"
-
-        echo "$${EFFECTIVE_VERSION}" > /workspace/effective-version.txt
+        echo "$${BASE_VERSION}" > /workspace/effective-version.txt
 
   - name: maven:3.9.16-eclipse-temurin-25
     id: Test
@@ -114,38 +102,24 @@ steps:
         EFFECTIVE_VERSION="$(cat /workspace/effective-version.txt)"
         mvn -B -ntp -s /workspace/settings.xml -Drevision="$${EFFECTIVE_VERSION}" clean verify
 
-  - name: maven:3.9.16-eclipse-temurin-25
-    id: Publish Snapshot
-    entrypoint: bash
-    args:
-      - -ceu
-      - |
-        EFFECTIVE_VERSION="$(cat /workspace/effective-version.txt)"
-        mvn -B -ntp -s /workspace/settings.xml deploy -DskipTests \
-          -Drevision="$${EFFECTIVE_VERSION}" \
-          -DaltDeploymentRepository=artifact-registry::https://${_REGION}-maven.pkg.dev/${PROJECT_ID}/${_REPO_SUFFIX}
-
-  - name: gcr.io/google.com/cloudsdktool/google-cloud-cli:slim
-    id: Log Published Coordinates
-    entrypoint: bash
-    args:
-      - -ceu
-      - |
-        VERSION="$(cat /workspace/effective-version.txt)"
-        echo "Published: uk.gov.ons.census.fwmt:census31-fwmt-outcome-service:$${VERSION}"
-        echo "Repository: ${_REPO_SUFFIX}"
-
   - name: gcr.io/cloud-builders/docker
     id: Build Docker Snapshot Image
     entrypoint: bash
     args:
       - -ceu
       - |
-        BRANCH_SAFE="$$(echo "${BRANCH_NAME:-feature}" | tr '[:upper:]' '[:lower:]' | sed -E 's#[^a-z0-9]+#-#g; s#^-+##; s#-+$##' | cut -c1-20)"
+        EFFECTIVE_VERSION="$(cat /workspace/effective-version.txt)"
+        if [[ "${TRIGGER_NAME}" == *-build ]]; then
+          IMAGE_TAG="$${EFFECTIVE_VERSION}"
+        else
+          BRANCH_SAFE="$$(echo "${BRANCH_NAME}" | tr '[:upper:]' '[:lower:]' | sed -E 's#[^a-z0-9]+#-#g; s#^-+##; s#-+$##' | cut -c1-20)"
+          IMAGE_TAG="$${BRANCH_SAFE}-$${EFFECTIVE_VERSION}-${SHORT_SHA}"
+        fi
         docker build --pull \
           --build-arg jar=$(ls target/*.jar | grep -v original | head -1) \
-          -t "${_DOCKER_REGION}-docker.pkg.dev/${PROJECT_ID}/${_DOCKER_REPO}/${_IMAGE}:$${BRANCH_SAFE}-${SHORT_SHA}-SNAPSHOT" \
+          -t "${_DOCKER_REGION}-docker.pkg.dev/${PROJECT_ID}/${_DOCKER_REPO}/${_IMAGE}:$${IMAGE_TAG}" \
           .
+        echo "$${IMAGE_TAG}" > /workspace/image-tag.txt
 
   - name: gcr.io/cloud-builders/docker
     id: Push Docker Snapshot Image
@@ -153,15 +127,16 @@ steps:
     args:
       - -ceu
       - |
-        BRANCH_SAFE="$$(echo "${BRANCH_NAME:-feature}" | tr '[:upper:]' '[:lower:]' | sed -E 's#[^a-z0-9]+#-#g; s#^-+##; s#-+$##' | cut -c1-20)"
-        docker push "${_DOCKER_REGION}-docker.pkg.dev/${PROJECT_ID}/${_DOCKER_REPO}/${_IMAGE}:$${BRANCH_SAFE}-${SHORT_SHA}-SNAPSHOT"
+        IMAGE_TAG="$(cat /workspace/image-tag.txt)"
+        docker push "${_DOCKER_REGION}-docker.pkg.dev/${PROJECT_ID}/${_DOCKER_REPO}/${_IMAGE}:$${IMAGE_TAG}"
 
 substitutions:
   _DOCKER_REGION: europe-west2
-  _DOCKER_REPO: "fwmtg-docker-release"
+  _DOCKER_REPO: "fwmtg-docker-snapshot"
   _IMAGE: census31-fwmt-outcome-service
-  _REPO_SUFFIX: fwmtg-maven-snapshot
   _REGION: europe-west2
+  _PR_NUMBER: ""
 
 options:
   logging: CLOUD_LOGGING_ONLY
+  automapSubstitutions: true

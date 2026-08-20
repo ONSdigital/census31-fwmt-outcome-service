@@ -6,20 +6,15 @@
 
   <parent>
     <groupId>uk.gov.ons.census.fwmt</groupId>
-    <artifactId>census31-fwmt-parent</artifactId>
-    <version>27.0.1</version>
+    <artifactId>census31-fwmt-common-parent</artifactId>
+    <version>27.0.3</version>
     <relativePath/>
   </parent>
 
   <artifactId>census31-fwmt-outcome-service</artifactId>
   <packaging>jar</packaging>
   <name>census31-fwmt-outcome-service</name>
-
-  <properties>
-    <fwmt.common.version>27.0.2</fwmt.common.version>
-    <fwmt.events.version>27.0.1</fwmt.events.version>
-    <fwmt.storage.utils.version>27.0.1</fwmt.storage.utils.version>
-  </properties>
+  <version>${revision}</version>
 
   <dependencies>
     <dependency>
@@ -28,23 +23,13 @@
     </dependency>
     <dependency>
       <groupId>uk.gov.ons.census.fwmt</groupId>
-      <artifactId>census31-fwmt-events</artifactId>
-      <version>${fwmt.events.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>uk.gov.ons.census.fwmt</groupId>
       <artifactId>census31-fwmt-common</artifactId>
-      <version>${fwmt.common.version}</version>
+      <version>${project.parent.version}</version>
     </dependency>
     <dependency>
       <groupId>ons.census.int.common</groupId>
       <artifactId>product-reference</artifactId>
       <version>1.0.0-local.20260701092235</version>
-    </dependency>
-    <dependency>
-      <groupId>uk.gov.ons.census.ffa</groupId>
-      <artifactId>census31-fwmt-storage-utils</artifactId>
-      <version>${fwmt.storage.utils.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.retry</groupId>
