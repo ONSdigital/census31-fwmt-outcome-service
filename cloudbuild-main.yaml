@@ -83,30 +83,18 @@ steps:
   - name: maven:3.9.16-eclipse-temurin-25
     id: Compute Main RC Version
     entrypoint: bash
-    env:
-      - BUILD_ID=$BUILD_ID
     args:
       - -ceu
       - |
-        if [[ ! -f version.txt ]]; then
-          echo "ERROR: version.txt not found" >&2
-          exit 1
-        fi
-
-        BASE_VERSION="$(tr -d '\r\n' < version.txt)"
+        BASE_VERSION="$(sed 's/-Drevision=//' .mvn/maven.config | tr -d '[:space:]')"
         if [[ -z "$${BASE_VERSION}" ]]; then
-          echo "ERROR: version.txt is empty" >&2
+          echo "ERROR: could not read version from .mvn/maven.config" >&2
           exit 1
         fi
 
-        BASE_VERSION="$(echo "$${BASE_VERSION}" | sed -E 's/-SNAPSHOT$//; s/-rc\.[0-9]+$//')"
+        BASE_VERSION="$(echo "$${BASE_VERSION}" | sed -E 's/-SNAPSHOT$//; s/-RC$//')"
 
-        RC_NUMBER="$(echo "$${BUILD_ID:-1}" | tr -cd '0-9' | cut -c1-6)"
-        if [[ -z "$${RC_NUMBER}" ]]; then
-          RC_NUMBER="1"
-        fi
-
-        EFFECTIVE_VERSION="$${BASE_VERSION}-rc.$${RC_NUMBER}"
+        EFFECTIVE_VERSION="$${BASE_VERSION}-RC"
         echo "$${EFFECTIVE_VERSION}" > /workspace/effective-version.txt
 
   - name: maven:3.9.16-eclipse-temurin-25
@@ -147,15 +135,43 @@ steps:
     - |
       EFFECTIVE_VERSION="$(cat /workspace/effective-version.txt)"
       gcloud pubsub topics publish \
-      projects/c31-fwmtg-ci-prod/topics/service-build-events \
-      --message="{}" \
-      --attribute=REPO_NAME=census31-fwmt-outcome-service,SHORT_SHA=$${EFFECTIVE_VERSION},STATUS=SUCCESS
+        projects/c31-fwmtg-ci-prod/topics/service-build-events \
+        --message="{}" \
+        --attribute=REPO_NAME=census31-fwmt-outcome-service,SHORT_SHA=$${EFFECTIVE_VERSION},STATUS=SUCCESS,DEPLOY_REQUESTED=false
+
+# TODO: uncomment once the github-ssh-key deploy key is granted write access to this repo
+#  - name: gcr.io/cloud-builders/git
+#    id: Tag release commit
+#    secretEnv: ["SSH_KEY"]
+#    entrypoint: bash
+#    args:
+#      - -ceu
+#      - |
+#        EFFECTIVE_VERSION="$(cat /workspace/effective-version.txt)"
+#        mkdir -p /root/.ssh
+#        echo "$$SSH_KEY" > /root/.ssh/id_rsa
+#        chmod 600 /root/.ssh/id_rsa
+#        ssh-keyscan github.com >> /root/.ssh/known_hosts
+#        chmod 644 /root/.ssh/known_hosts
+#        export GIT_SSH_COMMAND="ssh -i /root/.ssh/id_rsa -o UserKnownHostsFile=/root/.ssh/known_hosts"
+#        git config user.name "c31-fwmtg-ci-bot"
+#        git config user.email "c31-fwmtg-ci-bot@census.gov.uk"
+#        git remote set-url origin git@github.com:ONSdigital/census31-fwmt-outcome-service.git
+#        git tag -a "$${EFFECTIVE_VERSION}" -m "Release $${EFFECTIVE_VERSION}"
+#        git push origin "$${EFFECTIVE_VERSION}"
+
+# availableSecrets:
+#   secretManager:
+#     - versionName: projects/${_CI_PROJECT_ID}/secrets/github-ssh-key/versions/latest
+#       env: SSH_KEY
+
 substitutions:
   _DOCKER_REGION: europe-west2
   _DOCKER_REPO: "fwmtg-docker-release"
   _IMAGE: census31-fwmt-outcome-service
   _REPO_SUFFIX: fwmtg-maven-release
   _REGION: europe-west2
+  _CI_PROJECT_ID: c31-fwmtg-ci-prod
 
 options:
   logging: CLOUD_LOGGING_ONLY

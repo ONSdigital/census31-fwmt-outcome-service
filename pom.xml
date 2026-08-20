@@ -14,7 +14,7 @@
   <artifactId>census31-fwmt-outcome-service</artifactId>
   <packaging>jar</packaging>
   <name>census31-fwmt-outcome-service</name>
-  <version>27.0.2</version>
+  <version>${revision}</version>
 
   <dependencies>
     <dependency>
