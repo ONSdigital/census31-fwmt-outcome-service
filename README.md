@@ -2,7 +2,7 @@
 
 
 # census31-fwmt-outcome-service
-This service is a gateway between Total Mobile's COMET interface and FWMT outcome service.
+This service is a gateway between Total Mobile's COMET interface and FWMTG outcome service.
 
 It receives a JSON response from TM, transforms it into a FWMT Canonical and places the message onto the Gateway.Outcome RabbitMQ Queue
 
