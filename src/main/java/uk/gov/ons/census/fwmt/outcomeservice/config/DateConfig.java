@@ -5,11 +5,14 @@ import org.springframework.context.annotation.Configuration;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 @Configuration
 public class DateConfig {
   @Bean
   DateFormat dateFormat() {
-    return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
+    dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+    return dateFormat;
   }
 }
