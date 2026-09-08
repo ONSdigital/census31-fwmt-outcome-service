@@ -1,5 +1,5 @@
 > **THIS REPO IS SEEDED FROM 2021 CODE AND AS SUCH CURRENTLY NEEDS MODERNISATION!** (see also [SEEDING.md](SEEDING.md).)
-silent trigger
+
 
 # census31-fwmt-outcome-service
 This service is a gateway between Total Mobile's COMET interface and FWMTG outcome service.
