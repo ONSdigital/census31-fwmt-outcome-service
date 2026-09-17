@@ -26,10 +26,15 @@
       <artifactId>census31-fwmt-common</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
+       <dependency>
+      <groupId>ons.census.int.common</groupId>
+      <artifactId>framework</artifactId>
+      <version>1.0.7</version>
+    </dependency>
     <dependency>
       <groupId>ons.census.int.common</groupId>
       <artifactId>product-reference</artifactId>
-      <version>1.0.0-local.20260701092235</version>
+      <version>1.0.7</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.retry</groupId>
