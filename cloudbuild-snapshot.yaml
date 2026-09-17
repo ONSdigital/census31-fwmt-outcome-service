@@ -20,6 +20,11 @@ steps:
               <password>$${TOKEN}</password>
             </server>
             <server>
+              <id>rh-maven-release</id>
+              <username>oauth2accesstoken</username>
+              <password>$${TOKEN}</password>
+            </server>
+            <server>
               <id>fwmtg-maven-snapshot</id>
               <username>oauth2accesstoken</username>
               <password>$${TOKEN}</password>
@@ -42,6 +47,16 @@ steps:
                 <repository>
                   <id>fwmtg-maven-release</id>
                   <url>https://${_REGION}-maven.pkg.dev/${PROJECT_ID}/fwmtg-maven-release</url>
+                  <releases>
+                    <enabled>true</enabled>
+                  </releases>
+                  <snapshots>
+                    <enabled>false</enabled>
+                  </snapshots>
+                </repository>
+                <repository>
+                  <id>rh-maven-release</id>
+                  <url>https://${_REGION}-maven.pkg.dev/${_RH_CI_PROJECT_ID}/int-maven-release</url>
                   <releases>
                     <enabled>true</enabled>
                   </releases>
@@ -135,6 +150,7 @@ substitutions:
   _DOCKER_REPO: "fwmtg-docker-snapshot"
   _IMAGE: census31-fwmt-outcome-service
   _REGION: europe-west2
+  _RH_CI_PROJECT_ID: c31-rh-ci-prod
   _PR_NUMBER: ""
 
 options:
