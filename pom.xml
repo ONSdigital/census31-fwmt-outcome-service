@@ -26,7 +26,7 @@
       <artifactId>census31-fwmt-common</artifactId>
       <version>${project.parent.version}</version>
     </dependency>
-       <dependency>
+    <dependency>
       <groupId>ons.census.int.common</groupId>
       <artifactId>framework</artifactId>
       <version>1.0.7</version>
