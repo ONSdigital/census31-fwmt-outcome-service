@@ -21,7 +21,7 @@ import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
 import uk.gov.ons.census.fwmt.outcomeservice.helpers.HardRefusalHelper;
 import uk.gov.ons.census.fwmt.outcomeservice.message.GatewayOutcomeProducer;
-import uk.gov.ons.census.fwmt.outcomeservice.message.RmFieldRepublishProducer;
+import uk.gov.ons.census.fwmt.outcomeservice.message.PubSubFieldworkActionInstructionPublisher;
 import uk.gov.ons.census.fwmt.outcomeservice.template.TemplateCreator;
 
 import java.text.DateFormat;
@@ -37,7 +37,7 @@ public class CancelHHFeedbackLongPauseProcessorTest {
   private CancelHHFeedbackLongPauseProcessor cancelHHFeedbackLongPauseProcessor;
 
   @Mock
-  private RmFieldRepublishProducer rmFieldRepublishProducer;
+  private PubSubFieldworkActionInstructionPublisher fieldworkActionInstructionPublisher;
 
   @Mock
   private GatewayCaseRecord gatewayCache;
@@ -75,7 +75,7 @@ public class CancelHHFeedbackLongPauseProcessorTest {
   public void shouldSendCaseIdToRm() throws GatewayException, JSONException {
     final OutcomeSuperSetDto outcome = new HardRefusalHelper().createHardRefusalOutcomeWithSite();
     cancelHHFeedbackLongPauseProcessor.process(outcome, outcome.getCaseId(), "HH");
-    verify(rmFieldRepublishProducer).republish(longPause.capture());
+    verify(fieldworkActionInstructionPublisher).publish(longPause.capture(), any());
     FwmtCancelActionInstruction sentPause = longPause.getValue();
     Assertions.assertEquals(outcome.getCaseId().toString(), sentPause.getCaseId());
   }

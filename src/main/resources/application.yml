@@ -110,6 +110,8 @@ app:
     destinations:
       outcomePreprocessing: "Outcome.Preprocessing"
       outcomePreprocessingDlq: "Outcome.PreprocessingDLQ"
+      fieldworkActionInstructionInternal: event_fieldwork_action-instruction_internal
+    publish-timeout-millis: 5000
     subscriptions:
       outcomePreprocessingDlq: outcome-service-Outcome-PreprocessingDLQ
     pubsub:
