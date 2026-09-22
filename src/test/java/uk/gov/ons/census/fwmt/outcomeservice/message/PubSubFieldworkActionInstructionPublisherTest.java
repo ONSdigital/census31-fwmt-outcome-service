@@ -2,6 +2,9 @@ package uk.gov.ons.census.fwmt.outcomeservice.message;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,7 +40,9 @@ class PubSubFieldworkActionInstructionPublisherTest {
         "case-123", java.util.UUID.randomUUID(), Date.from(Instant.parse("2026-09-21T10:15:30Z")), ""));
 
     ArgumentCaptor<PubsubMessage> captured = ArgumentCaptor.forClass(PubsubMessage.class);
-    org.mockito.Mockito.verify(template).publish(eq("event_fieldwork_action-instruction_internal"), captured.capture());
+    verify(template).publish(eq("event_fieldwork_action-instruction_internal"), captured.capture());
+    verify(template, never()).publish(eq("RM.Field"), any(PubsubMessage.class));
+    verify(template, never()).publish(eq("GW.Field"), any(PubsubMessage.class));
     PubsubMessage message = captured.getValue();
     assertThat(message.getData().toStringUtf8()).contains("\"caseId\":\"case-123\"")
         .doesNotContain("__TypeId__", "timestamp");
