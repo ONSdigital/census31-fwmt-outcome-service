@@ -12,6 +12,7 @@ import uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceProcessor;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.RefusalEncryptionLookup;
 import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
+import uk.gov.ons.census.fwmt.outcomeservice.message.EventDictionaryMessageFactory;
 import uk.gov.ons.census.fwmt.outcomeservice.message.GatewayOutcomeProducer;
 import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCaseRecordService;
 import uk.gov.ons.census.fwmt.outcomeservice.template.TemplateCreator;
@@ -41,6 +42,9 @@ public class HardRefusalReceivedProcessor implements OutcomeServiceProcessor {
 
   @Autowired
   private GatewayOutcomeProducer gatewayOutcomeProducer;
+
+  @Autowired
+  private EventDictionaryMessageFactory eventDictionaryMessageFactory;
 
   @Autowired
   private GatewayEventManager gatewayEventManager;
@@ -112,25 +116,14 @@ public class HardRefusalReceivedProcessor implements OutcomeServiceProcessor {
           returnEncryptedNames(outcome.getRefusal().getSurname()) : "";
     }
 
-    String eventDateTime = dateFormat.format(outcome.getEventDate());
-    Map<String, Object> root = new HashMap<>();
-    root.put("outcome", outcome);
-    root.put("type", type);
-    root.put("refusalType", "HARD_REFUSAL");
-    root.put("officerId", outcome.getOfficerId());
-    root.put("caseId", caseId);
-    root.put("eventDate", eventDateTime);
-    root.put("isHouseHolder", isHouseHolder);
-    root.put("encryptedTitle", encryptedTitle);
-    root.put("encryptedForename", encryptedForename);
-    root.put("encryptedSurname", encryptedSurname);
-    root.put("refusalCodes", refusalCodes);
-
     try {
       TimeUnit.MILLISECONDS.sleep(outcomeSetup.getMessageProcessorSleepTime());
     } catch (InterruptedException ignored) {}
 
-    String outcomeEvent = TemplateCreator.createOutcomeMessage(REFUSAL_RECEIVED, root);
+    String outcomeEvent = eventDictionaryMessageFactory.buildRefusalReceived(
+        "HARD_REFUSAL",
+        caseId.toString(),
+        outcome.getOfficerId());
     gatewayOutcomeProducer.sendOutcome(outcomeEvent, String.valueOf(outcome.getTransactionId()),
             GatewayOutcomeQueueConfig.GATEWAY_RESPONDENT_REFUSAL_ROUTING_KEY);
 
