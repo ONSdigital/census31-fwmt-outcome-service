@@ -86,6 +86,14 @@ public class EventDictionaryMessageFactory {
         Map.of("fulfilmentRequest", fulfilmentRequest));
   }
 
+        public String buildQuestionnaireLinked(String questionnaireId, String caseId)
+        throws GatewayException {
+          return createMessage(
+          GatewayOutcomeQueueConfig.EVENT_QUESTIONNAIRE_LINKED_TOPIC,
+          "QUESTIONNAIRE_LINKED",
+          Map.of("uac", Map.of("questionnaireId", questionnaireId, "caseId", caseId)));
+        }
+
   private String createMessage(String topic, String messageType, Map<String, Object> payload)
       throws GatewayException {
     Map<String, Object> header = new LinkedHashMap<>();

@@ -32,6 +32,7 @@ class GatewayOutcomeProducerTest {
     setFieldIfPresent("fieldCaseUpdatedTopic", "event_field-case-updated");
     setFieldIfPresent("fulfilmentRequestTopic", "event_fulfilment-request");
     setFieldIfPresent("addressNotValidTopic", "event_address-not-valid");
+    setFieldIfPresent("questionnaireLinkedTopic", "event_questionnaire-linked");
     setFieldIfPresent("objectMapper", new ObjectMapper());
   }
 
@@ -76,6 +77,18 @@ class GatewayOutcomeProducerTest {
     producer.sendOutcome("{}", "tx-4", GatewayOutcomeQueueConfig.GATEWAY_ADDRESS_NOT_VALID_ROUTING_KEY);
 
     verify(pubSubTemplate).publish(eq("event_address-not-valid"), any(PubsubMessage.class));
+    verify(pubSubTemplate, never()).publish(eq("Field.other"), any(PubsubMessage.class));
+  }
+
+  @Test
+  void publishesQuestionnaireLinkedEventsToDictionaryTopic() throws GatewayException {
+    when(pubSubTemplate.publish(eq("event_questionnaire-linked"), any(PubsubMessage.class)))
+        .thenReturn(CompletableFuture.completedFuture("message-5"));
+
+    producer.sendOutcome(
+        "{}", "tx-5", GatewayOutcomeQueueConfig.GATEWAY_QUESTIONNAIRE_LINKED_ROUTING_KEY);
+
+    verify(pubSubTemplate).publish(eq("event_questionnaire-linked"), any(PubsubMessage.class));
     verify(pubSubTemplate, never()).publish(eq("Field.other"), any(PubsubMessage.class));
   }
 

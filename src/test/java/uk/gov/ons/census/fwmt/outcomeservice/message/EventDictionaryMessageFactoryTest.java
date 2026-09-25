@@ -55,6 +55,19 @@ class EventDictionaryMessageFactoryTest {
   }
 
     @Test
+    void buildsQuestionnaireLinkedEnvelopeWithoutIndividualCaseId() throws Exception {
+        String payload = factory.buildQuestionnaireLinked("qid-123", "case-456");
+
+        JsonNode root = new ObjectMapper().readTree(payload);
+        JsonNode uac = root.path("payload").path("uac");
+        assertThat(root.path("header").path("topic").asText()).isEqualTo("event_questionnaire-linked");
+        assertThat(root.path("header").path("messageType").asText()).isEqualTo("QUESTIONNAIRE_LINKED");
+        assertThat(uac.path("questionnaireId").asText()).isEqualTo("qid-123");
+        assertThat(uac.path("caseId").asText()).isEqualTo("case-456");
+        assertThat(uac.has("individualCaseId")).isFalse();
+    }
+
+    @Test
     void buildsAddressNotValidEnvelope() throws Exception {
         String payload = factory.buildAddressNotValid("reason-123", "case-789");
 

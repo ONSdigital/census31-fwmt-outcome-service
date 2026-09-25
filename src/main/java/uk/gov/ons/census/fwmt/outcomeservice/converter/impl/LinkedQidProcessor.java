@@ -10,14 +10,11 @@ import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
 import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord.GatewayCaseRecordBuilder;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.FulfilmentRequestDto;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
+import uk.gov.ons.census.fwmt.outcomeservice.message.EventDictionaryMessageFactory;
 import uk.gov.ons.census.fwmt.outcomeservice.message.GatewayOutcomeProducer;
 import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCaseRecordService;
-import uk.gov.ons.census.fwmt.outcomeservice.template.TemplateCreator;
 
 import org.springframework.transaction.annotation.Transactional;
-import java.text.DateFormat;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import static uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceLogConfig.*;
@@ -28,10 +25,10 @@ import static uk.gov.ons.census.fwmt.outcomeservice.enums.EventType.QUESTIONNAIR
 public class LinkedQidProcessor implements OutcomeServiceProcessor {
 
   @Autowired
-  private DateFormat dateFormat;
+  private GatewayOutcomeProducer gatewayOutcomeProducer;
 
   @Autowired
-  private GatewayOutcomeProducer gatewayOutcomeProducer;
+  private EventDictionaryMessageFactory eventDictionaryMessageFactory;
 
   @Autowired
   private GatewayEventManager gatewayEventManager;
@@ -55,25 +52,19 @@ public class LinkedQidProcessor implements OutcomeServiceProcessor {
     UUID caseId = (caseIdHolder != null) ? caseIdHolder : outcome.getCaseId();
     for (FulfilmentRequestDto fulfilmentRequest : outcome.getFulfilmentRequests()) {
       if (isQuestionnaireLinked(fulfilmentRequest)) {
-        String eventDateTime = dateFormat.format(outcome.getEventDate());
-
-        Map<String, Object> root = new HashMap<>();
-        root.put("outcome", outcome);
-        root.put("caseId", caseId);
-        root.put("questionnaireId", fulfilmentRequest.getQuestionnaireID());
-        root.put("eventDate", eventDateTime);
         cacheData(caseId);
 
-        String outcomeEvent = TemplateCreator.createOutcomeMessage(QUESTIONNAIRE_LINKED, root);
+        String outcomeEvent = eventDictionaryMessageFactory.buildQuestionnaireLinked(
+            fulfilmentRequest.getQuestionnaireID(), caseId.toString());
 
         gatewayOutcomeProducer.sendOutcome(outcomeEvent, String.valueOf(outcome.getTransactionId()),
-            GatewayOutcomeQueueConfig.GATEWAY_QUESTIONNAIRE_UPDATE_ROUTING_KEY);
+            GatewayOutcomeQueueConfig.GATEWAY_QUESTIONNAIRE_LINKED_ROUTING_KEY);
 
         gatewayEventManager.triggerEvent(String.valueOf(caseId), OUTCOME_SENT,
             SURVEY_TYPE, type,
             TEMPLATE_TYPE, QUESTIONNAIRE_LINKED.toString(),
             TRANSACTION_ID, outcome.getTransactionId().toString(),
-            ROUTING_KEY, GatewayOutcomeQueueConfig.GATEWAY_QUESTIONNAIRE_UPDATE_ROUTING_KEY);
+            ROUTING_KEY, GatewayOutcomeQueueConfig.GATEWAY_QUESTIONNAIRE_LINKED_ROUTING_KEY);
       }
     }
     return caseIdHolder;
