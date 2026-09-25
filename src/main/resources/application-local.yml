@@ -3,6 +3,11 @@ spring:
     gcp:
       pubsub:
         emulator-host: localhost:8085
+app:
+  messaging:
+    destinations:
+      fieldworkActionInstructionInternal: event_fieldwork_action-instruction_internal
+    publish-timeout-millis: 5000
 management:
   endpoint:
     env:

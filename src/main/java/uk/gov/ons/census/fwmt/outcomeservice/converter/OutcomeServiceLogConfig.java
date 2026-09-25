@@ -8,7 +8,7 @@ public class OutcomeServiceLogConfig {
 
   public static final String OUTCOME_SENT = "OUTCOME_SENT";
 
-  public static final String RM_FIELD_REPUBLISH = "RM_FIELD_REPUBLISH";
+  public static final String FIELDWORK_ACTION_INSTRUCTION_PUBLISH = "FIELDWORK_ACTION_INSTRUCTION_PUBLISH";
 
   public static final String FAILED_TO_LOOKUP_REASON_CODE = "FAILED_TO_LOOKUP_REASON_CODE";
 

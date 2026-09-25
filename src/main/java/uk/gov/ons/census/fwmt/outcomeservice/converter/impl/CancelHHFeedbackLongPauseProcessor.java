@@ -8,7 +8,8 @@ import uk.gov.ons.census.fwmt.common.rm.dto.FwmtCancelActionInstruction;
 import uk.gov.ons.census.fwmt.common.events.component.GatewayEventManager;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceProcessor;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
-import uk.gov.ons.census.fwmt.outcomeservice.message.RmFieldRepublishProducer;
+import uk.gov.ons.census.fwmt.outcomeservice.message.OutcomePublicationContext;
+import uk.gov.ons.census.fwmt.outcomeservice.message.PubSubFieldworkActionInstructionPublisher;
 
 import java.util.UUID;
 
@@ -18,7 +19,7 @@ import static uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceLogC
 public class CancelHHFeedbackLongPauseProcessor implements OutcomeServiceProcessor {
 
     @Autowired
-    private RmFieldRepublishProducer rmFieldRepublishProducer;
+    private PubSubFieldworkActionInstructionPublisher fieldworkActionInstructionPublisher;
 
     @Autowired
     private GatewayEventManager gatewayEventManager;
@@ -40,9 +41,11 @@ public class CancelHHFeedbackLongPauseProcessor implements OutcomeServiceProcess
                 .caseId(String.valueOf(outcome.getCaseId()))
                 .build();
 
-        rmFieldRepublishProducer.republish(fieldworkCancel);
+        fieldworkActionInstructionPublisher.publish(fieldworkCancel,
+            new OutcomePublicationContext(fieldworkCancel.getCaseId(), outcome.getTransactionId(),
+                outcome.getEventDate(), ""));
 
-        gatewayEventManager.triggerEvent(String.valueOf(caseId), RM_FIELD_REPUBLISH,
+        gatewayEventManager.triggerEvent(String.valueOf(caseId), FIELDWORK_ACTION_INSTRUCTION_PUBLISH,
             SURVEY_NAME, "CENSUS",
             ADDRESS_TYPE, "HH",
             ACTION_INSTRUCTION_TYPE, ActionInstructionType.CANCEL.toString(),

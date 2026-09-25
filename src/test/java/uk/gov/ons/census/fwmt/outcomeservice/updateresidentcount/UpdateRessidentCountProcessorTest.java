@@ -1,5 +1,7 @@
 package uk.gov.ons.census.fwmt.outcomeservice.updateresidentcount;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.tomcat.util.json.ParseException;
 import org.json.JSONException;
 import org.junit.jupiter.api.Assertions;
@@ -18,6 +20,7 @@ import uk.gov.ons.census.fwmt.outcomeservice.converter.impl.UpdateResidentCountP
 import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
 import uk.gov.ons.census.fwmt.outcomeservice.helpers.OutcomeHelper;
+import uk.gov.ons.census.fwmt.outcomeservice.message.EventDictionaryMessageFactory;
 import uk.gov.ons.census.fwmt.outcomeservice.message.GatewayOutcomeProducer;
 import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCaseRecordService;
 import uk.gov.ons.census.fwmt.outcomeservice.template.TemplateCreator;
@@ -60,6 +63,9 @@ public class UpdateRessidentCountProcessorTest {
   @Mock
   private GatewayCaseRecordService gatewayCacheService;
 
+  @Mock
+  private EventDictionaryMessageFactory eventDictionaryMessageFactory;
+
   @Captor
   private ArgumentCaptor<GatewayCaseRecord> spiedCache;
 
@@ -70,7 +76,7 @@ public class UpdateRessidentCountProcessorTest {
   @DisplayName("Should update the closed cache state to update")
   public void shouldUpdateTheClosedCacheStateToUpdate() throws GatewayException, ParseException, JSONException {
     final OutcomeSuperSetDto outcome = new OutcomeHelper().createUpdateResidentCount();
-    when(dateFormat.format(any())).thenReturn("2020-04-17T11:53:11.000+0000");
+    when(eventDictionaryMessageFactory.buildFieldCaseUpdated(anyString(), any(Integer.class))).thenReturn("{}");
     GatewayCaseRecord gatewayCache = new GatewayCaseRecord();
     gatewayCache.setOriginalCaseId(outcome.getCaseId().toString());
     gatewayCache.setLastActionInstruction("CANCEL");
@@ -79,5 +85,31 @@ public class UpdateRessidentCountProcessorTest {
     verify(gatewayCacheService).save(spiedCache.capture());
     String lastActionInstruction = spiedCache.getValue().lastActionInstruction;
     Assertions.assertEquals("UPDATE", lastActionInstruction);
+  }
+
+  @Test
+  @DisplayName("Should emit Event Dictionary field case update payload")
+  public void shouldEmitEventDictionaryFieldCaseUpdatePayload() throws Exception {
+    final OutcomeSuperSetDto outcome = new OutcomeHelper().createUpdateResidentCount();
+    when(eventDictionaryMessageFactory.buildFieldCaseUpdated(anyString(), any(Integer.class))).thenReturn(
+      "{\"header\":{\"topic\":\"event_field-case-updated\",\"source\":\"FIELDWORK_GATEWAY\",\"channel\":\"FIELD\",\"messageType\":\"FIELD_CASE_UPDATED\"},\"payload\":{\"fieldCaseUpdate\":{\"caseId\":\""
+        + outcome.getCaseId()
+        + "\",\"ceExpectedCapacity\":5}}}");
+
+    updateResidentCountProcessor.process(outcome, outcome.getCaseId(), "CE");
+
+    verify(gatewayOutcomeProducer).sendOutcome(outcomeEventCaptor.capture(), any(), any());
+    JsonNode root = new ObjectMapper().readTree(outcomeEventCaptor.getValue());
+
+    Assertions.assertTrue(root.has("header"));
+    Assertions.assertFalse(root.has("event"));
+    Assertions.assertEquals("event_field-case-updated", root.path("header").path("topic").asText());
+    Assertions.assertEquals("FIELDWORK_GATEWAY", root.path("header").path("source").asText());
+    Assertions.assertEquals("FIELD", root.path("header").path("channel").asText());
+    Assertions.assertEquals("FIELD_CASE_UPDATED", root.path("header").path("messageType").asText());
+    Assertions.assertEquals(outcome.getCaseId().toString(),
+        root.path("payload").path("fieldCaseUpdate").path("caseId").asText());
+    Assertions.assertEquals(5,
+        root.path("payload").path("fieldCaseUpdate").path("ceExpectedCapacity").asInt());
   }
 }

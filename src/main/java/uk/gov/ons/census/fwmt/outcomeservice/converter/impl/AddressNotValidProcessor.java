@@ -8,12 +8,9 @@ import uk.gov.ons.census.fwmt.outcomeservice.config.GatewayOutcomeQueueConfig;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceProcessor;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.ReasonCodeLookup;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
+import uk.gov.ons.census.fwmt.outcomeservice.message.EventDictionaryMessageFactory;
 import uk.gov.ons.census.fwmt.outcomeservice.message.GatewayOutcomeProducer;
-import uk.gov.ons.census.fwmt.outcomeservice.template.TemplateCreator;
 
-import java.text.DateFormat;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import static uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceLogConfig.*;
@@ -23,10 +20,10 @@ import static uk.gov.ons.census.fwmt.outcomeservice.enums.EventType.ADDRESS_NOT_
 public class AddressNotValidProcessor implements OutcomeServiceProcessor {
 
   @Autowired
-  private DateFormat dateFormat;
+  private GatewayOutcomeProducer gatewayOutcomeProducer;
 
   @Autowired
-  private GatewayOutcomeProducer gatewayOutcomeProducer;
+  private EventDictionaryMessageFactory eventDictionaryMessageFactory;
 
   @Autowired
   private GatewayEventManager gatewayEventManager;
@@ -54,23 +51,16 @@ public class AddressNotValidProcessor implements OutcomeServiceProcessor {
           SECONDARY_OUTCOME, outcome.getSecondaryOutcomeDescription());
     }
 
-    String eventDateTime = dateFormat.format(outcome.getEventDate());
-    Map<String, Object> root = new HashMap<>();
-    root.put("outcome", outcome);
-    root.put("reason", reasonCode);
-    root.put("caseId", caseId);
-    root.put("eventDate", eventDateTime);
-
-    String outcomeEvent = TemplateCreator.createOutcomeMessage(ADDRESS_NOT_VALID, root);
+    String outcomeEvent = eventDictionaryMessageFactory.buildAddressNotValid(reasonCode, caseId.toString());
 
     gatewayOutcomeProducer.sendOutcome(outcomeEvent, String.valueOf(outcome.getTransactionId()),
-        GatewayOutcomeQueueConfig.GATEWAY_ADDRESS_UPDATE_ROUTING_KEY);
+      GatewayOutcomeQueueConfig.GATEWAY_ADDRESS_NOT_VALID_ROUTING_KEY);
 
     gatewayEventManager.triggerEvent(String.valueOf(caseId), OUTCOME_SENT,
         SURVEY_TYPE, type,
         TEMPLATE_TYPE, ADDRESS_NOT_VALID.toString(),
         TRANSACTION_ID, outcome.getTransactionId().toString(),
-        ROUTING_KEY, GatewayOutcomeQueueConfig.GATEWAY_ADDRESS_UPDATE_ROUTING_KEY);
+        ROUTING_KEY, GatewayOutcomeQueueConfig.GATEWAY_ADDRESS_NOT_VALID_ROUTING_KEY);
     return caseId;
   }
 }

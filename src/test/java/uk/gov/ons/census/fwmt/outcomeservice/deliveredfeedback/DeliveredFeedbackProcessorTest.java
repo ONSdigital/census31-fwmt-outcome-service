@@ -21,7 +21,7 @@ import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
 import uk.gov.ons.census.fwmt.outcomeservice.helpers.OutcomeHelper;
 import uk.gov.ons.census.fwmt.outcomeservice.message.GatewayOutcomeProducer;
-import uk.gov.ons.census.fwmt.outcomeservice.message.RmFieldRepublishProducer;
+import uk.gov.ons.census.fwmt.outcomeservice.message.PubSubFieldworkActionInstructionPublisher;
 import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCaseRecordService;
 import uk.gov.ons.census.fwmt.outcomeservice.template.TemplateCreator;
 
@@ -64,7 +64,7 @@ public class DeliveredFeedbackProcessorTest {
   private GatewayCaseRecordService gatewayCacheService;
 
   @Mock
-  private RmFieldRepublishProducer rmFieldRepublishProducer;
+  private PubSubFieldworkActionInstructionPublisher fieldworkActionInstructionPublisher;
 
   @Captor
   private ArgumentCaptor<GatewayCaseRecord> spiedCache;
