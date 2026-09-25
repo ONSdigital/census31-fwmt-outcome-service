@@ -111,6 +111,7 @@ app:
       outcomePreprocessing: "Outcome.Preprocessing"
       outcomePreprocessingDlq: "Outcome.PreprocessingDLQ"
       fieldworkActionInstructionInternal: event_fieldwork_action-instruction_internal
+      addressNotValid: event_address-not-valid
     publish-timeout-millis: 5000
     subscriptions:
       outcomePreprocessingDlq: outcome-service-Outcome-PreprocessingDLQ

@@ -31,6 +31,7 @@ class GatewayOutcomeProducerTest {
     setFieldIfPresent("refusalReceivedTopic", "event_refusal-received");
     setFieldIfPresent("fieldCaseUpdatedTopic", "event_field-case-updated");
     setFieldIfPresent("fulfilmentRequestTopic", "event_fulfilment-request");
+    setFieldIfPresent("addressNotValidTopic", "event_address-not-valid");
     setFieldIfPresent("objectMapper", new ObjectMapper());
   }
 
@@ -64,6 +65,17 @@ class GatewayOutcomeProducerTest {
     producer.sendOutcome("{}", "tx-3", GatewayOutcomeQueueConfig.GATEWAY_FULFILMENT_REQUEST_ROUTING_KEY);
 
     verify(pubSubTemplate).publish(eq("event_fulfilment-request"), any(PubsubMessage.class));
+    verify(pubSubTemplate, never()).publish(eq("Field.other"), any(PubsubMessage.class));
+  }
+
+  @Test
+  void publishesAddressNotValidEventsToDictionaryTopic() throws GatewayException {
+    when(pubSubTemplate.publish(eq("event_address-not-valid"), any(PubsubMessage.class)))
+        .thenReturn(CompletableFuture.completedFuture("message-4"));
+
+    producer.sendOutcome("{}", "tx-4", GatewayOutcomeQueueConfig.GATEWAY_ADDRESS_NOT_VALID_ROUTING_KEY);
+
+    verify(pubSubTemplate).publish(eq("event_address-not-valid"), any(PubsubMessage.class));
     verify(pubSubTemplate, never()).publish(eq("Field.other"), any(PubsubMessage.class));
   }
 

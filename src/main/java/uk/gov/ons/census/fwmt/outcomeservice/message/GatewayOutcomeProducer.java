@@ -33,6 +33,9 @@ public class GatewayOutcomeProducer {
   @Value("${app.messaging.destinations.fulfilmentRequest:event_fulfilment-request}")
   private String fulfilmentRequestTopic;
 
+  @Value("${app.messaging.destinations.addressNotValid:event_address-not-valid}")
+  private String addressNotValidTopic;
+
   @Retryable
   public boolean sendOutcome(String outcomeEvent, String transactionId, String routingKey) throws GatewayException {
     String topic = topicForRoutingKey(routingKey);
@@ -73,6 +76,9 @@ public class GatewayOutcomeProducer {
     }
     if (GatewayOutcomeQueueConfig.GATEWAY_FULFILMENT_REQUEST_ROUTING_KEY.equals(routingKey)) {
       return fulfilmentRequestTopic;
+    }
+    if (GatewayOutcomeQueueConfig.GATEWAY_ADDRESS_NOT_VALID_ROUTING_KEY.equals(routingKey)) {
+      return addressNotValidTopic;
     }
     return null;
   }

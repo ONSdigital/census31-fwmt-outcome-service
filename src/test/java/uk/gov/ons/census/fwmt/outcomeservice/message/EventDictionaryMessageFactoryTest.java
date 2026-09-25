@@ -53,4 +53,25 @@ class EventDictionaryMessageFactoryTest {
         .isEqualTo("Ms");
     assertThat(root.path("payload").path("fulfilmentRequest").path("contact").has("telNo")).isFalse();
   }
+
+    @Test
+    void buildsAddressNotValidEnvelope() throws Exception {
+        String payload = factory.buildAddressNotValid("reason-123", "case-789");
+
+        JsonNode root = new ObjectMapper().readTree(payload);
+        JsonNode header = root.path("header");
+        JsonNode invalidAddress = root.path("payload").path("invalidAddress");
+        assertThat(header.path("version").asText()).isEqualTo("1.0.0");
+        assertThat(header.path("topic").asText()).isEqualTo("event_address-not-valid");
+        assertThat(header.path("source").asText()).isEqualTo("FIELDWORK_GATEWAY");
+        assertThat(header.path("channel").asText()).isEqualTo("FIELD");
+        assertThat(header.path("correlationId").asText()).isEmpty();
+        assertThat(header.path("messageType").asText()).isEqualTo("ADDRESS_NOT_VALID");
+        assertThat(header.path("messageId").asText()).isNotBlank();
+        assertThat(header.path("dateTime").asText()).isNotBlank();
+        assertThat(invalidAddress.path("reason").asText()).isEqualTo("reason-123");
+        assertThat(invalidAddress.path("caseId").asText()).isEqualTo("case-789");
+        assertThat(invalidAddress.has("collectionCase")).isFalse();
+        assertThat(invalidAddress.has("notes")).isFalse();
+    }
 }
