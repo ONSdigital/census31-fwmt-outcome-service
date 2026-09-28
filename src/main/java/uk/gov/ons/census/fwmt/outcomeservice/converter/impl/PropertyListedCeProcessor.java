@@ -44,6 +44,8 @@ public class PropertyListedCeProcessor implements OutcomeServiceProcessor {
     cacheData(outcome, newCaseId);
 
     // Historical CCS_ADDRESS_LISTED template values (not current runtime behavior):
+    // outcome: the outcome DTO.
+    // address: outcome address.
     // caseId: newCaseId, the generated property-listed case ID.
     // eventDate: formatted outcome event date.
     // addressType: "CE".

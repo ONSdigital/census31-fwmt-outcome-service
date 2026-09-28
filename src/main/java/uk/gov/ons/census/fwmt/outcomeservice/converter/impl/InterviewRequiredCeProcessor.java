@@ -39,6 +39,20 @@ public class InterviewRequiredCeProcessor implements OutcomeServiceProcessor {
         ADDRESS_TYPE, "CE");
 
     cacheData(outcome, newCaseId);
+    // Historical CCS_ADDRESS_LISTED template values (not current runtime behavior):
+    // outcome: the outcome DTO.
+    // address: outcome address.
+    // caseId: generated interview case ID.
+    // eventDate: formatted outcome event date.
+    // addressType: "CE".
+    // addressLevel: "E".
+    // interviewRequired: "True".
+    // oa: value from the parent/original case cache looked up by the selected caseId.
+    // region: first character of the cached OA.
+    // estabType: CE establishment type, defaulting to "CE".
+    // organisationName: CE establishment name, defaulting to an empty string.
+    // This legacy message is intentionally suppressed; do not rebuild or publish it without an
+    // approved replacement contract.
     gatewayOutcomeProducer.logLegacyOutcomeSuppressed(
       "Field.other", CCS_ADDRESS_LISTED.toString(), String.valueOf(outcome.getTransactionId()));
 

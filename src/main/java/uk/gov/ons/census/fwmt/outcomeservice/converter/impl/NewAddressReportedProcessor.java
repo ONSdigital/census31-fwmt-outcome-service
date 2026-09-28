@@ -39,6 +39,21 @@ public class NewAddressReportedProcessor implements OutcomeServiceProcessor {
     boolean isDelivered = isDelivered(outcome);
     cacheData(outcome, caseId, isDelivered);
 
+    // Historical NEW_ADDRESS_REPORTED template values (not current runtime behavior):
+    // sourceCase: "NEW_STANDALONE".
+    // outcome: the outcome DTO.
+    // ceDetails: present CE details; establishmentType and establishmentSecure defaulted to
+    //     "OTHER" and "false" when absent.
+    // usualResidents: CE usual-resident count when details were present, defaulting to 0.
+    // newCaseId: selected case ID.
+    // address: outcome address.
+    // officerId: outcome officer ID.
+    // eventDate: formatted outcome event date.
+    // surveyType: processor survey-type argument.
+    // region: value derived by regionLookup(outcome.getOfficerId()).
+    // addressLevel: "E" for CE; "U" for HH or SPG; other types were rejected.
+    // This legacy message is intentionally suppressed; do not rebuild or publish it without an
+    // approved replacement contract.
     gatewayOutcomeProducer.logLegacyOutcomeSuppressed(
         "Field.other", NEW_ADDRESS_REPORTED.toString(), String.valueOf(outcome.getTransactionId()));
 

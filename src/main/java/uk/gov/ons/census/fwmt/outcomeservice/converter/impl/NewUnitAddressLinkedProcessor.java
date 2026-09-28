@@ -40,6 +40,20 @@ public class NewUnitAddressLinkedProcessor implements OutcomeServiceProcessor {
     boolean isDelivered = isDelivered(outcome);
     cacheData(outcome, outcome.getCaseId(), isDelivered);
 
+    // Historical NEW_ADDRESS_REPORTED template values (not current runtime behavior):
+    // sourceCase: "NEW_UNIT".
+    // outcome: the outcome DTO.
+    // newCaseId: selected case ID.
+    // sourceCaseId: outcome.getSiteCaseId().
+    // region: value derived by regionLookup(outcome.getOfficerId()).
+    // officerId: outcome officer ID.
+    // address: outcome address.
+    // eventDate: formatted outcome event date.
+    // surveyType: processor survey-type argument.
+    // addressLevel: "U".
+    // usualResidents: at least 1 for CE with a supplied count; otherwise 1.
+    // This legacy message is intentionally suppressed; do not rebuild or publish it without an
+    // approved replacement contract.
     gatewayOutcomeProducer.logLegacyOutcomeSuppressed(
         "Field.other", NEW_ADDRESS_REPORTED.toString(), String.valueOf(outcome.getTransactionId()));
 

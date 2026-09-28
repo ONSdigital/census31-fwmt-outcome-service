@@ -38,6 +38,17 @@ public class AddressTypeChangedCeEstProcessor implements OutcomeServiceProcessor
 
     UUID newCaseId = UUID.randomUUID();
     cacheData(outcome, caseId, newCaseId);
+    // Historical ADDRESS_TYPE_CHANGED template values (not current runtime behavior):
+    // caseId: selected original/input case ID.
+    // newCaseId: generated case ID.
+    // outcome: the outcome DTO.
+    // eventDate: formatted outcome event date.
+    // surveyType: "CE".
+    // estabType: CE establishment type, or null when unavailable.
+    // estabName: CE establishment name, or null when unavailable.
+    // usualResidents: CE usual-resident count, defaulting to 0 when details or value were absent.
+    // This legacy message is intentionally suppressed; do not rebuild or publish it without an
+    // approved replacement contract.
     gatewayOutcomeProducer.logLegacyOutcomeSuppressed(
       "Field.other", ADDRESS_TYPE_CHANGED.toString(), String.valueOf(outcome.getTransactionId()));
 

@@ -38,6 +38,16 @@ public class AddressTypeChangedHhProcessor implements OutcomeServiceProcessor {
 
     UUID newCaseId = UUID.randomUUID();
     cacheData(outcome, caseId, newCaseId);
+    // Historical ADDRESS_TYPE_CHANGED template values (not current runtime behavior):
+    // caseId: selected original/input case ID.
+    // newCaseId: generated case ID.
+    // outcome: the outcome DTO.
+    // eventDate: formatted outcome event date.
+    // surveyType: "HH".
+    // usualResidents: 0.
+    // region: value derived by regionLookup(outcome.getOfficerId()).
+    // This legacy message is intentionally suppressed; do not rebuild or publish it without an
+    // approved replacement contract.
     gatewayOutcomeProducer.logLegacyOutcomeSuppressed(
       "Field.other", ADDRESS_TYPE_CHANGED.toString(), String.valueOf(outcome.getTransactionId()));
 
