@@ -31,6 +31,9 @@ public class PropertyListedCeProcessor implements OutcomeServiceProcessor {
     UUID caseId = (caseIdHolder != null) ? caseIdHolder : outcome.getCaseId();
     UUID newCaseId = UUID.randomUUID();
 
+    // PROCESSING_OUTCOME telemetry remains intentional after retiring the legacy RM message;
+    // it records processing for the original case and generated property-listed case. Do not
+    // emit OUTCOME_SENT: no outcome message is published by this processor.
     gatewayEventManager.triggerEvent(String.valueOf(caseId), PROCESSING_OUTCOME,
         SURVEY_TYPE, type,
         PROCESSOR, "PROPERTY_LISTED_CE",
@@ -39,6 +42,15 @@ public class PropertyListedCeProcessor implements OutcomeServiceProcessor {
         ADDRESS_TYPE, "CE");
 
     cacheData(outcome, newCaseId);
+
+    // Historical CCS_ADDRESS_LISTED template values (not current runtime behavior): caseId was
+    // newCaseId; eventDate was formatted, addressType="CE", addressLevel="E", and
+    // interviewRequired="False". oa came from the parent/original case cache via
+    // gatewayCacheService.getById(String.valueOf(caseId)); region was the first character of
+    // that cached OA. estabType defaulted to "CE" and organisationName to empty string.
+    // There is no approved Event Dictionary destination for this legacy message, so it is
+    // intentionally suppressed; do not rebuild or publish it without an approved replacement
+    // contract.
     gatewayOutcomeProducer.logLegacyOutcomeSuppressed(
       "Field.other", CCS_ADDRESS_LISTED.toString(), String.valueOf(outcome.getTransactionId()));
 
