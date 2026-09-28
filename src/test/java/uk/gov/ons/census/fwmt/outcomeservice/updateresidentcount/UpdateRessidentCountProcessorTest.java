@@ -98,7 +98,7 @@ public class UpdateRessidentCountProcessorTest {
 
     updateResidentCountProcessor.process(outcome, outcome.getCaseId(), "CE");
 
-    verify(gatewayOutcomeProducer).sendOutcome(outcomeEventCaptor.capture(), any(), any());
+    verify(gatewayOutcomeProducer).sendOutcome(outcomeEventCaptor.capture(), any());
     JsonNode root = new ObjectMapper().readTree(outcomeEventCaptor.getValue());
 
     Assertions.assertTrue(root.has("header"));

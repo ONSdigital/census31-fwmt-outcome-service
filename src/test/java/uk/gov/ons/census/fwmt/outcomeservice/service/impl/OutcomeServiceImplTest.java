@@ -51,6 +51,10 @@ class OutcomeServiceImplTest {
 
     verify(fulfilmentProcessor).process(eq(outcome), eq(null), eq("CE"));
     org.assertj.core.api.Assertions.assertThat(output.getOut())
-        .contains("Legacy queue Field.other is retired; operation LINKED_QID has no replacement topic; event not published");
+      .contains("Outcome processor missing operation=LINKED_QID")
+      .contains("outcomeCode=20-20-01")
+      .contains("surveyType=CE")
+      .doesNotContain("Field.other")
+      .doesNotContain("messageType");
   }
 }

@@ -95,7 +95,7 @@ class FulfilmentRequestProcessorTest {
 
     fulfilmentRequestProcessor.process(outcome, null, "HH");
 
-    verify(gatewayOutcomeProducer).sendOutcome(eq("{}"), eq(outcome.getTransactionId().toString()), anyString());
+    verify(gatewayOutcomeProducer).sendOutcome(eq("{}"), eq(outcome.getTransactionId().toString()));
     verify(gatewayCacheService).save(cacheCaptor.capture());
     verify(eventDictionaryMessageFactory).buildFulfilmentRequest(
         eq(outcome.getCaseId().toString()),
@@ -122,7 +122,7 @@ class FulfilmentRequestProcessorTest {
 
     fulfilmentRequestProcessor.process(outcome, null, "HH");
 
-    verify(gatewayOutcomeProducer, never()).sendOutcome(anyString(), anyString(), anyString());
+    verify(gatewayOutcomeProducer, never()).sendOutcome(anyString(), anyString());
     verifyNoInteractions(eventDictionaryMessageFactory);
   }
 }

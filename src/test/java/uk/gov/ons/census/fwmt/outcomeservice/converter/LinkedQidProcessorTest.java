@@ -15,7 +15,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
 import uk.gov.ons.census.fwmt.common.events.component.GatewayEventManager;
-import uk.gov.ons.census.fwmt.outcomeservice.config.GatewayOutcomeQueueConfig;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.impl.LinkedQidProcessor;
 import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.FulfilmentRequestDto;
@@ -60,9 +59,7 @@ class LinkedQidProcessorTest {
     verify(eventDictionaryMessageFactory)
         .buildQuestionnaireLinked("qid-123", effectiveCaseId.toString());
     verify(gatewayOutcomeProducer).sendOutcome(
-        eq("{\"dictionary\":true}"),
-        eq(transactionId.toString()),
-        eq(GatewayOutcomeQueueConfig.GATEWAY_QUESTIONNAIRE_LINKED_ROUTING_KEY));
+      eq("{\"dictionary\":true}"), eq(transactionId.toString()));
     ArgumentCaptor<GatewayCaseRecord> savedRecord = ArgumentCaptor.forClass(GatewayCaseRecord.class);
     verify(gatewayCacheService).save(savedRecord.capture());
     assertThat(savedRecord.getValue().isDelivered()).isTrue();

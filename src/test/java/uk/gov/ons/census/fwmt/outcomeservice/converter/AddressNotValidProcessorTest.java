@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
 import uk.gov.ons.census.fwmt.common.events.component.GatewayEventManager;
-import uk.gov.ons.census.fwmt.outcomeservice.config.GatewayOutcomeQueueConfig;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.impl.AddressNotValidProcessor;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
 import uk.gov.ons.census.fwmt.outcomeservice.message.EventDictionaryMessageFactory;
@@ -53,8 +52,6 @@ class AddressNotValidProcessorTest {
 
     verify(eventDictionaryMessageFactory).buildAddressNotValid("DERELICT", caseId.toString());
     verify(gatewayOutcomeProducer).sendOutcome(
-        eq("{\"dictionary\":true}"),
-        eq(transactionId.toString()),
-        eq(GatewayOutcomeQueueConfig.GATEWAY_ADDRESS_NOT_VALID_ROUTING_KEY));
+      eq("{\"dictionary\":true}"), eq(transactionId.toString()));
   }
 }

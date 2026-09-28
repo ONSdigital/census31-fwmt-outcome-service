@@ -81,7 +81,7 @@ public class UpdateRessidentCountZeroProcessorTest {
             + outcome.getSiteCaseId()
             + "\",\"ceExpectedCapacity\":0}}}");
     updateResidentCountZeroProcessor.process(outcome, outcome.getCaseId(), "CE");
-    verify(gatewayOutcomeProducer).sendOutcome(outcomeEventCaptor.capture(), any(), any());
+    verify(gatewayOutcomeProducer).sendOutcome(outcomeEventCaptor.capture(), any());
     String outcomeEvent = outcomeEventCaptor.getValue();
     JSONObject jsonObject = new JSONObject(outcomeEvent);
 
