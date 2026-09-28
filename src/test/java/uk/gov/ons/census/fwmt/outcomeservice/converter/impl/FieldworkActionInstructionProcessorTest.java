@@ -16,8 +16,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.census.fwmt.common.events.component.GatewayEventManager;
 import uk.gov.ons.census.fwmt.common.rm.dto.ActionInstructionType;
-import uk.gov.ons.census.fwmt.common.rm.dto.FwmtActionInstruction;
-import uk.gov.ons.census.fwmt.common.rm.dto.FwmtCancelActionInstruction;
+import uk.gov.ons.census.fwmt.common.rm.dto.ActionInstruction;
+import uk.gov.ons.census.fwmt.common.rm.dto.CancelActionInstruction;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
 import uk.gov.ons.census.fwmt.outcomeservice.message.OutcomePublicationContext;
 import uk.gov.ons.census.fwmt.outcomeservice.message.PubSubFieldworkActionInstructionPublisher;
@@ -48,10 +48,10 @@ class FieldworkActionInstructionProcessorTest {
   private SwitchFeedbackUnitFProcessor switchFeedbackUnitFProcessor;
 
   @Captor
-  private ArgumentCaptor<FwmtCancelActionInstruction> cancelInstructionCaptor;
+  private ArgumentCaptor<CancelActionInstruction> cancelInstructionCaptor;
 
   @Captor
-  private ArgumentCaptor<FwmtActionInstruction> actionInstructionCaptor;
+  private ArgumentCaptor<ActionInstruction> actionInstructionCaptor;
 
   @Captor
   private ArgumentCaptor<OutcomePublicationContext> publicationContextCaptor;
@@ -67,7 +67,7 @@ class FieldworkActionInstructionProcessorTest {
 
     verify(fieldworkActionInstructionPublisher).publish(cancelInstructionCaptor.capture(),
         publicationContextCaptor.capture());
-    FwmtCancelActionInstruction instruction = cancelInstructionCaptor.getValue();
+    CancelActionInstruction instruction = cancelInstructionCaptor.getValue();
     assertThat(instruction.getActionInstruction()).isEqualTo(ActionInstructionType.CANCEL);
     assertThat(instruction.getCaseId()).isEqualTo(loggedCaseId);
     assertThat(publicationContextCaptor.getValue().caseId()).isEqualTo(loggedCaseId);
@@ -105,7 +105,7 @@ class FieldworkActionInstructionProcessorTest {
   private void assertSwitchPublication(String expectedCaseId) {
     verify(fieldworkActionInstructionPublisher).publish(actionInstructionCaptor.capture(),
         publicationContextCaptor.capture());
-    FwmtActionInstruction instruction = actionInstructionCaptor.getValue();
+    ActionInstruction instruction = actionInstructionCaptor.getValue();
     assertThat(instruction.getActionInstruction()).isEqualTo(ActionInstructionType.SWITCH_CE_TYPE);
     assertThat(instruction.getCaseId()).isEqualTo(expectedCaseId);
     assertThat(publicationContextCaptor.getValue().caseId()).isEqualTo(expectedCaseId);

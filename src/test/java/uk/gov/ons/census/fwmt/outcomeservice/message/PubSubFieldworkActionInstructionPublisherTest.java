@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.test.util.ReflectionTestUtils;
 import uk.gov.ons.census.fwmt.common.rm.dto.ActionInstructionType;
-import uk.gov.ons.census.fwmt.common.rm.dto.FwmtActionInstruction;
+import uk.gov.ons.census.fwmt.common.rm.dto.ActionInstruction;
 
 class PubSubFieldworkActionInstructionPublisherTest {
 
@@ -31,7 +31,7 @@ class PubSubFieldworkActionInstructionPublisherTest {
         new PubSubFieldworkActionInstructionPublisher(template, new ObjectMapper());
     ReflectionTestUtils.setField(publisher, "topic", "event_fieldwork_action-instruction_internal");
 
-    FwmtActionInstruction payload = FwmtActionInstruction.builder()
+    ActionInstruction payload = ActionInstruction.builder()
         .actionInstruction(ActionInstructionType.UPDATE)
         .surveyName("CENSUS")
         .caseId("case-123")

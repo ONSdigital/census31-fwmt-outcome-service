@@ -17,8 +17,8 @@ import java.util.concurrent.TimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.gov.ons.census.fwmt.common.rm.dto.FwmtActionInstruction;
-import uk.gov.ons.census.fwmt.common.rm.dto.FwmtCancelActionInstruction;
+import uk.gov.ons.census.fwmt.common.rm.dto.ActionInstruction;
+import uk.gov.ons.census.fwmt.common.rm.dto.CancelActionInstruction;
 
 @Slf4j
 @Service
@@ -38,17 +38,17 @@ public class PubSubFieldworkActionInstructionPublisher {
     this.objectMapper = objectMapper;
   }
 
-  public void publish(FwmtActionInstruction payload, OutcomePublicationContext context) {
+  public void publish(ActionInstruction payload, OutcomePublicationContext context) {
     publishInstruction(payload, context);
   }
 
-  public void publish(FwmtCancelActionInstruction payload, OutcomePublicationContext context) {
+  public void publish(CancelActionInstruction payload, OutcomePublicationContext context) {
     publishInstruction(payload, context);
   }
 
   private void publishInstruction(Object payload, OutcomePublicationContext context) {
-    String payloadCaseId = payload instanceof FwmtActionInstruction action
-        ? action.getCaseId() : ((FwmtCancelActionInstruction) payload).getCaseId();
+    String payloadCaseId = payload instanceof ActionInstruction action
+        ? action.getCaseId() : ((CancelActionInstruction) payload).getCaseId();
     if (!context.caseId().equals(payloadCaseId)) {
       throw new IllegalArgumentException("Publication context caseId does not match payload caseId");
     }

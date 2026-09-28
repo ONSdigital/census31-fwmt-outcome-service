@@ -11,7 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
-import uk.gov.ons.census.fwmt.common.rm.dto.FwmtCancelActionInstruction;
+import uk.gov.ons.census.fwmt.common.rm.dto.CancelActionInstruction;
 import uk.gov.ons.census.fwmt.common.events.component.GatewayEventManager;
 import uk.gov.ons.census.fwmt.outcomeservice.config.OutcomeSetup;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.RefusalEncryptionLookup;
@@ -59,22 +59,22 @@ public class CancelHHFeedbackLongPauseProcessorTest {
   private OutcomeSetup outcomeSetup;
 
   @Captor
-  private ArgumentCaptor<FwmtCancelActionInstruction> longPause;
+  private ArgumentCaptor<CancelActionInstruction> longPause;
 
   @Test
-  @DisplayName("Should publish FwmtCancelActionInstruction to the internal action-instruction topic")
-  public void shouldPublishFwmtCancelActionInstructionToInternalTopic() throws GatewayException {
+  @DisplayName("Should publish CancelActionInstruction to the internal action-instruction topic")
+  public void shouldPublishCancelActionInstructionToInternalTopic() throws GatewayException {
     final OutcomeSuperSetDto outcome = new HardRefusalHelper().createHardRefusalOutcomne();
     Assertions.assertEquals(outcome.getCaseId(), cancelHHFeedbackLongPauseProcessor.process(outcome, outcome.getCaseId(), "HH"));
   }
 
   @Test
-  @DisplayName("Should publish FwmtCancelActionInstruction with caseId rather than siteCaseId")
+  @DisplayName("Should publish CancelActionInstruction with caseId rather than siteCaseId")
   public void shouldPublishCaseIdInsteadOfSiteCaseId() throws GatewayException, JSONException {
     final OutcomeSuperSetDto outcome = new HardRefusalHelper().createHardRefusalOutcomeWithSite();
     cancelHHFeedbackLongPauseProcessor.process(outcome, outcome.getCaseId(), "HH");
     verify(fieldworkActionInstructionPublisher).publish(longPause.capture(), any());
-    FwmtCancelActionInstruction sentPause = longPause.getValue();
+    CancelActionInstruction sentPause = longPause.getValue();
     Assertions.assertEquals(outcome.getCaseId().toString(), sentPause.getCaseId());
   }
 }
