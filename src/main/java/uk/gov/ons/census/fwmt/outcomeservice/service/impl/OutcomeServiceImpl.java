@@ -7,7 +7,6 @@ import uk.gov.ons.census.fwmt.common.error.GatewayException;
 import uk.gov.ons.census.fwmt.common.events.component.GatewayEventManager;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeLookup;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceProcessor;
-import uk.gov.ons.census.fwmt.outcomeservice.config.GatewayOutcomeQueueConfig;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
 import uk.gov.ons.census.fwmt.outcomeservice.message.OutcomeOperationContext;
 import uk.gov.ons.census.fwmt.outcomeservice.service.OutcomeService;
@@ -110,13 +109,12 @@ public class OutcomeServiceImpl implements OutcomeService {
       OutcomeServiceProcessor processor = outcomeServiceProcessors.get(operation);
       if (processor == null) {
         log.error(
-            "Legacy queue {} is retired; operation {} has no replacement topic; event not published transactionId={} outcomeCode={} caseId={} surveyType={}",
-            GatewayOutcomeQueueConfig.retiredQueueForOperation(operation),
-            operation,
-            outcome.getTransactionId(),
-            outcome.getOutcomeCode(),
-            (caseIdHolder != null) ? caseIdHolder : outcome.getCaseId(),
-            surveyType);
+          "Outcome processor missing operation={} outcomeCode={} caseId={} surveyType={} transactionId={}",
+          operation,
+          outcome.getOutcomeCode(),
+          (caseIdHolder != null) ? caseIdHolder : outcome.getCaseId(),
+          surveyType,
+            outcome.getTransactionId());
         continue;
       }
 

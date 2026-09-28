@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 import uk.gov.ons.census.fwmt.common.storageutils.StorageUtils;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
 import uk.gov.ons.census.fwmt.common.events.component.GatewayEventManager;
-import uk.gov.ons.census.fwmt.outcomeservice.config.GatewayOutcomeQueueConfig;
 import uk.gov.ons.census.fwmt.outcomeservice.config.OutcomeSetup;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceProcessor;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.RefusalEncryptionLookup;
@@ -124,14 +123,12 @@ public class HardRefusalReceivedProcessor implements OutcomeServiceProcessor {
         "HARD_REFUSAL",
         caseId.toString(),
         outcome.getOfficerId());
-    gatewayOutcomeProducer.sendOutcome(outcomeEvent, String.valueOf(outcome.getTransactionId()),
-            GatewayOutcomeQueueConfig.GATEWAY_RESPONDENT_REFUSAL_ROUTING_KEY);
+    gatewayOutcomeProducer.sendOutcome(outcomeEvent, String.valueOf(outcome.getTransactionId()));
 
     gatewayEventManager.triggerEvent(String.valueOf(caseId), OUTCOME_SENT,
         SURVEY_TYPE, type,
         TEMPLATE_TYPE, REFUSAL_RECEIVED.toString(),
-        TRANSACTION_ID, outcome.getTransactionId().toString(),
-        ROUTING_KEY, GatewayOutcomeQueueConfig.GATEWAY_RESPONDENT_REFUSAL_ROUTING_KEY);
+        TRANSACTION_ID, outcome.getTransactionId().toString());
 
     return caseId;
   }

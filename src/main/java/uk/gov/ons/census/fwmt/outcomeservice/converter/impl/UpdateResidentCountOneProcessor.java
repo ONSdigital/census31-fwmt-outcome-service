@@ -5,7 +5,6 @@ import org.springframework.stereotype.Component;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
 import uk.gov.ons.census.fwmt.common.rm.dto.ActionInstructionType;
 import uk.gov.ons.census.fwmt.common.events.component.GatewayEventManager;
-import uk.gov.ons.census.fwmt.outcomeservice.config.GatewayOutcomeQueueConfig;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceProcessor;
 import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
@@ -58,14 +57,12 @@ public class UpdateResidentCountOneProcessor implements OutcomeServiceProcessor 
           .build());
     }
 
-    gatewayOutcomeProducer.sendOutcome(outcomeEvent, String.valueOf(outcome.getTransactionId()),
-        GatewayOutcomeQueueConfig.GATEWAY_FIELD_CASE_UPDATE_ROUTING_KEY);
+    gatewayOutcomeProducer.sendOutcome(outcomeEvent, String.valueOf(outcome.getTransactionId()));
 
     gatewayEventManager.triggerEvent(String.valueOf(caseId), OUTCOME_SENT,
         SURVEY_TYPE, type,
         TEMPLATE_TYPE, FIELD_CASE_UPDATED.toString(),
-        TRANSACTION_ID, outcome.getTransactionId().toString(),
-        ROUTING_KEY, GatewayOutcomeQueueConfig.GATEWAY_FIELD_CASE_UPDATE_ROUTING_KEY);
+        TRANSACTION_ID, outcome.getTransactionId().toString());
     return caseId;
   }
 }

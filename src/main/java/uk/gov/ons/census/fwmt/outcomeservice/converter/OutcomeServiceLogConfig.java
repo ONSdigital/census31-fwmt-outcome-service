@@ -42,6 +42,4 @@ public class OutcomeServiceLogConfig {
 
   public static final String TRANSACTION_ID = "Transaction ID";
 
-  public static final String ROUTING_KEY = "Routing key";
-
 }

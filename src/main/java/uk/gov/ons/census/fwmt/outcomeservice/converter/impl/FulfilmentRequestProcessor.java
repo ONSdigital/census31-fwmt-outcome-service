@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
 import uk.gov.ons.census.fwmt.common.events.component.GatewayEventManager;
-import uk.gov.ons.census.fwmt.outcomeservice.config.GatewayOutcomeQueueConfig;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceProcessor;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.QuestionnaireTypeLookup;
 import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
@@ -61,14 +60,12 @@ public class FulfilmentRequestProcessor implements OutcomeServiceProcessor {
         String outcomeEvent =
             createQuestionnaireRequiredByPostEvent(fulfilmentRequest, String.valueOf(caseId), type);
 
-        gatewayOutcomeProducer.sendOutcome(outcomeEvent, String.valueOf(outcome.getTransactionId()),
-            GatewayOutcomeQueueConfig.GATEWAY_FULFILMENT_REQUEST_ROUTING_KEY);
+        gatewayOutcomeProducer.sendOutcome(outcomeEvent, String.valueOf(outcome.getTransactionId()));
 
         gatewayEventManager.triggerEvent(String.valueOf(caseIdHolder), OUTCOME_SENT,
             SURVEY_TYPE, type,
             TEMPLATE_TYPE, FULFILMENT_REQUESTED.toString(),
-            TRANSACTION_ID, outcome.getTransactionId().toString(),
-            ROUTING_KEY, GatewayOutcomeQueueConfig.GATEWAY_FULFILMENT_REQUEST_ROUTING_KEY);
+            TRANSACTION_ID, outcome.getTransactionId().toString());
       }
     }
     return caseId;

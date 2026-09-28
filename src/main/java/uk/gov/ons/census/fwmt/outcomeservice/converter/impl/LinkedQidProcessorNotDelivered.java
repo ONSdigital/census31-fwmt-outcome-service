@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
 import uk.gov.ons.census.fwmt.common.events.component.GatewayEventManager;
-import uk.gov.ons.census.fwmt.outcomeservice.config.GatewayOutcomeQueueConfig;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceProcessor;
 import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
 import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord.GatewayCaseRecordBuilder;
@@ -58,14 +57,12 @@ public class LinkedQidProcessorNotDelivered implements OutcomeServiceProcessor {
         String outcomeEvent = eventDictionaryMessageFactory.buildQuestionnaireLinked(
             fulfilmentRequest.getQuestionnaireID(), caseId.toString());
 
-        gatewayOutcomeProducer.sendOutcome(outcomeEvent, String.valueOf(outcome.getTransactionId()),
-            GatewayOutcomeQueueConfig.GATEWAY_QUESTIONNAIRE_LINKED_ROUTING_KEY);
+        gatewayOutcomeProducer.sendOutcome(outcomeEvent, String.valueOf(outcome.getTransactionId()));
 
         gatewayEventManager.triggerEvent(String.valueOf(caseId), OUTCOME_SENT,
             SURVEY_TYPE, type,
             TEMPLATE_TYPE, QUESTIONNAIRE_LINKED.toString(),
-            TRANSACTION_ID, outcome.getTransactionId().toString(),
-            ROUTING_KEY, GatewayOutcomeQueueConfig.GATEWAY_QUESTIONNAIRE_LINKED_ROUTING_KEY);
+            TRANSACTION_ID, outcome.getTransactionId().toString());
       }
     }
     return caseIdHolder;
