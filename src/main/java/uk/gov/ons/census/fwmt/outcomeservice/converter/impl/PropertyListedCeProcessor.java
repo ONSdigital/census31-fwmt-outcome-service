@@ -43,11 +43,17 @@ public class PropertyListedCeProcessor implements OutcomeServiceProcessor {
 
     cacheData(outcome, newCaseId);
 
-    // Historical CCS_ADDRESS_LISTED template values (not current runtime behavior): caseId was
-    // newCaseId; eventDate was formatted, addressType="CE", addressLevel="E", and
-    // interviewRequired="False". oa came from the parent/original case cache via
-    // gatewayCacheService.getById(String.valueOf(caseId)); region was the first character of
-    // that cached OA. estabType defaulted to "CE" and organisationName to empty string.
+    // Historical CCS_ADDRESS_LISTED template values (not current runtime behavior):
+    // caseId: newCaseId, the generated property-listed case ID.
+    // eventDate: formatted outcome event date.
+    // addressType: "CE".
+    // addressLevel: "E".
+    // interviewRequired: "False".
+    // oa: value from the parent/original case cache, loaded by
+    //     gatewayCacheService.getById(String.valueOf(caseId)).
+    // region: first character of the cached OA.
+    // estabType: establishment type, defaulting to "CE".
+    // organisationName: establishment name, defaulting to an empty string.
     // There is no approved Event Dictionary destination for this legacy message, so it is
     // intentionally suppressed; do not rebuild or publish it without an approved replacement
     // contract.
