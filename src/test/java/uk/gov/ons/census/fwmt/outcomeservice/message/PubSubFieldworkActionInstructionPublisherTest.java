@@ -16,8 +16,8 @@ import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.test.util.ReflectionTestUtils;
-import uk.gov.ons.census.fwmt.common.rm.dto.ActionInstructionType;
-import uk.gov.ons.census.fwmt.common.rm.dto.ActionInstruction;
+import uk.gov.ons.census.fwmt.common.dto.rm.ActionInstructionType;
+import uk.gov.ons.census.fwmt.common.dto.rm.ActionInstruction;
 
 class PubSubFieldworkActionInstructionPublisherTest {
 

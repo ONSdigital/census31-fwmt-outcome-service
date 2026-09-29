@@ -17,8 +17,8 @@ import java.util.concurrent.TimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import uk.gov.ons.census.fwmt.common.rm.dto.ActionInstruction;
-import uk.gov.ons.census.fwmt.common.rm.dto.CancelActionInstruction;
+import uk.gov.ons.census.fwmt.common.dto.rm.ActionInstruction;
+import uk.gov.ons.census.fwmt.common.dto.rm.CancelActionInstruction;
 
 @Slf4j
 @Service
