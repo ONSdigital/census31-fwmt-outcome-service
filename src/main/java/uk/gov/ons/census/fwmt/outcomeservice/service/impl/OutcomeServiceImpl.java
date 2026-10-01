@@ -119,17 +119,21 @@ public class OutcomeServiceImpl implements OutcomeService {
       }
 
       // Make this operation's details available to producer logs while its processor runs.
-      OutcomeOperationContext.set(new OutcomeOperationContext.Details(
-          operation,
-          outcome.getOutcomeCode(),
-          outcome.getTransactionId() != null ? outcome.getTransactionId().toString() : "UNKNOWN",
-          String.valueOf((caseIdHolder != null) ? caseIdHolder : outcome.getCaseId()),
-          surveyType));
-      try {
+        setOperationContextInThreadLocalForLegacyOperationLogging(outcome, surveyType, operation, caseIdHolder);
+        try {
         caseIdHolder = processor.process(outcome, caseIdHolder, surveyType);
       } finally {
         OutcomeOperationContext.clear();
       }
     }
   }
+
+    private static void setOperationContextInThreadLocalForLegacyOperationLogging(OutcomeSuperSetDto outcome, String surveyType, String operation, UUID caseIdHolder) {
+        OutcomeOperationContext.set(new OutcomeOperationContext.Details(
+                operation,
+            outcome.getOutcomeCode(),
+            outcome.getTransactionId() != null ? outcome.getTransactionId().toString() : "UNKNOWN",
+            String.valueOf((caseIdHolder != null) ? caseIdHolder : outcome.getCaseId()),
+                surveyType));
+    }
 }
