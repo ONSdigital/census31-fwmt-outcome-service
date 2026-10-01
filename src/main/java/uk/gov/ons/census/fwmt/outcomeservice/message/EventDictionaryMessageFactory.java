@@ -41,15 +41,15 @@ public class EventDictionaryMessageFactory {
         Map.of("fieldCaseUpdate", fieldCaseUpdate));
   }
 
-        public String buildAddressNotValid(String reason, String caseId) throws GatewayException {
-          Map<String, Object> invalidAddress = new LinkedHashMap<>();
-          invalidAddress.put("reason", reason);
-          invalidAddress.put("caseId", caseId);
-          return createMessage(
-          GatewayOutcomeQueueConfig.EVENT_ADDRESS_NOT_VALID_TOPIC,
-          "ADDRESS_NOT_VALID",
-          Map.of("invalidAddress", invalidAddress));
-        }
+  public String buildAddressNotValid(String reason, String caseId) throws GatewayException {
+    Map<String, Object> invalidAddress = new LinkedHashMap<>();
+    invalidAddress.put("reason", reason);
+    invalidAddress.put("caseId", caseId);
+    return createMessage(
+      GatewayOutcomeQueueConfig.EVENT_ADDRESS_NOT_VALID_TOPIC,
+      "ADDRESS_NOT_VALID",
+      Map.of("invalidAddress", invalidAddress));
+  }
 
   public String buildFulfilmentRequest(
       String caseId,
@@ -86,13 +86,13 @@ public class EventDictionaryMessageFactory {
         Map.of("fulfilmentRequest", fulfilmentRequest));
   }
 
-        public String buildQuestionnaireLinked(String questionnaireId, String caseId)
-        throws GatewayException {
-          return createMessage(
-          GatewayOutcomeQueueConfig.EVENT_QUESTIONNAIRE_LINKED_TOPIC,
-          "QUESTIONNAIRE_LINKED",
-          Map.of("uac", Map.of("questionnaireId", questionnaireId, "caseId", caseId)));
-        }
+  public String buildQuestionnaireLinked(String questionnaireId, String caseId)
+      throws GatewayException {
+    return createMessage(
+      GatewayOutcomeQueueConfig.EVENT_QUESTIONNAIRE_LINKED_TOPIC,
+      "QUESTIONNAIRE_LINKED",
+      Map.of("uac", Map.of("questionnaireId", questionnaireId, "caseId", caseId)));
+  }
 
   private String createMessage(String topic, String messageType, Map<String, Object> payload)
       throws GatewayException {
