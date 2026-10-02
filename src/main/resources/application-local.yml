@@ -11,3 +11,5 @@ management:
         enabled: true
     refresh:
       enabled: true
+app:
+  testing: true
