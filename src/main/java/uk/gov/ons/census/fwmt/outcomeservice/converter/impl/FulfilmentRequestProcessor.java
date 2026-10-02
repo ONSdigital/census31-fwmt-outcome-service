@@ -5,20 +5,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
 import uk.gov.ons.census.fwmt.common.events.component.GatewayEventManager;
-import uk.gov.ons.census.fwmt.outcomeservice.config.GatewayOutcomeQueueConfig;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceProcessor;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.QuestionnaireTypeLookup;
 import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
 import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord.GatewayCaseRecordBuilder;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.FulfilmentRequestDto;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
+import uk.gov.ons.census.fwmt.outcomeservice.message.EventDictionaryMessageFactory;
 import uk.gov.ons.census.fwmt.outcomeservice.message.GatewayOutcomeProducer;
 import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCaseRecordService;
-import uk.gov.ons.census.fwmt.outcomeservice.template.TemplateCreator;
 import uk.gov.ons.ctp.integration.common.product.ProductReference;
 import uk.gov.ons.ctp.integration.common.product.model.Product;
 
-import java.text.DateFormat;
 import java.util.*;
 
 import static uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceLogConfig.*;
@@ -30,9 +28,6 @@ import uk.gov.ons.ctp.common.domain.Channel;
 public class FulfilmentRequestProcessor implements OutcomeServiceProcessor {
 
   @Autowired
-  private DateFormat dateFormat;
-
-  @Autowired
   private ProductReference productReference;
 
   @Autowired
@@ -40,6 +35,9 @@ public class FulfilmentRequestProcessor implements OutcomeServiceProcessor {
 
   @Autowired
   private GatewayOutcomeProducer gatewayOutcomeProducer;
+
+  @Autowired
+  private EventDictionaryMessageFactory eventDictionaryMessageFactory;
 
   @Autowired
   private GatewayEventManager gatewayEventManager;
@@ -59,29 +57,21 @@ public class FulfilmentRequestProcessor implements OutcomeServiceProcessor {
     UUID caseId = (caseIdHolder != null) ? caseIdHolder : outcome.getCaseId();
     for (FulfilmentRequestDto fulfilmentRequest : outcome.getFulfilmentRequests()) {
       if (!isQuestionnaireLinked(fulfilmentRequest) && fulfilmentRequest.getQuestionnaireType() != null) {
-        String eventDateTime = dateFormat.format(outcome.getEventDate());
-        Map<String, Object> root = new HashMap<>();
-        root.put("outcome", outcome);
-        root.put("caseId", caseId);
-        root.put("eventDate", eventDateTime);
         String outcomeEvent =
-            createQuestionnaireRequiredByPostEvent(root, fulfilmentRequest, String.valueOf(caseId), type);
+            createQuestionnaireRequiredByPostEvent(fulfilmentRequest, String.valueOf(caseId), type);
 
-        gatewayOutcomeProducer.sendOutcome(outcomeEvent, String.valueOf(outcome.getTransactionId()),
-            GatewayOutcomeQueueConfig.GATEWAY_FULFILMENT_REQUEST_ROUTING_KEY);
+        gatewayOutcomeProducer.sendOutcome(outcomeEvent, String.valueOf(outcome.getTransactionId()));
 
         gatewayEventManager.triggerEvent(String.valueOf(caseIdHolder), OUTCOME_SENT,
             SURVEY_TYPE, type,
             TEMPLATE_TYPE, FULFILMENT_REQUESTED.toString(),
-            TRANSACTION_ID, outcome.getTransactionId().toString(),
-            ROUTING_KEY, GatewayOutcomeQueueConfig.GATEWAY_FULFILMENT_REQUEST_ROUTING_KEY);
+            TRANSACTION_ID, outcome.getTransactionId().toString());
       }
     }
     return caseId;
   }
 
   private String createQuestionnaireRequiredByPostEvent(
-      Map<String, Object> root,
       FulfilmentRequestDto fulfilmentRequest,
       String caseId,
       String type)
@@ -91,18 +81,24 @@ public class FulfilmentRequestProcessor implements OutcomeServiceProcessor {
     Product product = getProductFromQuestionnaireType(fulfilmentRequest);
     if (product.getIndividual() && type.equals("HH")) {
       individualCaseId = String.valueOf(UUID.randomUUID());
-      root.put("individualCaseId", individualCaseId);
-      root.put("surveyType", type);
     }
-    root.put("packcode", product.getFulfilmentCode());
-    root.put("requesterTitle", fulfilmentRequest.getRequesterTitle());
-    root.put("requesterForename", fulfilmentRequest.getRequesterForename());
-    root.put("requesterSurname", fulfilmentRequest.getRequesterSurname());
-    root.put("requesterPhone", fulfilmentRequest.getRequesterPhone());
 
     cacheData(caseId, individualCaseId);
 
-    return TemplateCreator.createOutcomeMessage(FULFILMENT_REQUESTED, root);
+    String deliveryChannel = String.valueOf(product.getDeliveryChannel());
+    boolean includeNameContact = product.getIndividual() && "POST".equals(deliveryChannel);
+    boolean includePhoneContact = "SMS".equals(deliveryChannel);
+
+    return eventDictionaryMessageFactory.buildFulfilmentRequest(
+        caseId,
+        product.getFulfilmentCode(),
+        individualCaseId,
+        includeNameContact,
+        fulfilmentRequest.getRequesterTitle(),
+        fulfilmentRequest.getRequesterForename(),
+        fulfilmentRequest.getRequesterSurname(),
+        includePhoneContact,
+        fulfilmentRequest.getRequesterPhone());
   }
 
   private Product getProductFromQuestionnaireType(FulfilmentRequestDto fulfilmentRequest)

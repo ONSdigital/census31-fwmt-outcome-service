@@ -1,13 +1,12 @@
 package uk.gov.ons.census.fwmt.outcomeservice.newaddress;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.DisplayName;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -18,12 +17,9 @@ import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
 import uk.gov.ons.census.fwmt.outcomeservice.helpers.OutcomeHelper;
 import uk.gov.ons.census.fwmt.outcomeservice.message.GatewayOutcomeProducer;
 import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCaseRecordService;
+import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
 
-import java.text.DateFormat;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import java.util.UUID;
 
 @ExtendWith(MockitoExtension.class)
 public class NewAddressReportedTemplateTest {
@@ -38,39 +34,33 @@ public class NewAddressReportedTemplateTest {
   private GatewayEventManager eventManager;
 
   @Mock
-  private DateFormat dateFormat;
-
-  @Mock
   private GatewayOutcomeProducer gatewayOutcomeProducer;
 
-  @Captor
-  private ArgumentCaptor<String> outcomeEventCaptor;
-
   @Test
-  @DisplayName("Should update the estabType for SPG")
-  public void shouldUpdateEstabTypeForSpg() throws GatewayException, JSONException {
+  void shouldSuppressLegacyEventAndKeepCacheAndCaseIdForSpg() throws GatewayException {
     final OutcomeSuperSetDto outcome = new OutcomeHelper().createNewStandaloneOutcome();
-    when(dateFormat.format(any())).thenReturn("2020-04-17T11:53:11.000+0000");
-    newAddressReportedProcessor.process(outcome, outcome.getCaseId(), "SPG");
-    verify(gatewayOutcomeProducer).sendOutcome(outcomeEventCaptor.capture(), any(), any());
-    String outcomeEvent = outcomeEventCaptor.getValue();
-    JSONObject jsonObject = new JSONObject(outcomeEvent);
-    JSONObject collectionCase = jsonObject.getJSONObject("payload").getJSONObject("newAddress").getJSONObject("collectionCase").getJSONObject("address");
-    String estabType = collectionCase.get("estabType").toString();
-    Assertions.assertEquals(outcome.getCeDetails().getEstablishmentType(), estabType);
+    UUID result = newAddressReportedProcessor.process(outcome, outcome.getCaseId(), "SPG");
+
+    verify(gatewayOutcomeProducer).logLegacyOutcomeSuppressed(
+        eq("Field.other"), eq("NEW_ADDRESS_REPORTED"), eq(String.valueOf(outcome.getTransactionId())));
+    verify(gatewayOutcomeProducer, never()).sendOutcome(any(), any());
+    verify(cacheService).save(any(GatewayCaseRecord.class));
+    verify(eventManager, never())
+      .triggerEvent(eq(outcome.getCaseId().toString()), eq("OUTCOME_SENT"), any(String[].class));
+    org.assertj.core.api.Assertions.assertThat(result).isEqualTo(outcome.getCaseId());
   }
 
   @Test
-  @DisplayName("Should update the estabType for CE")
-  public void shouldUpdateEstabTypeForCe() throws GatewayException, JSONException {
+  void shouldSuppressLegacyEventAndKeepCacheAndCaseIdForCe() throws GatewayException {
     final OutcomeSuperSetDto outcome = new OutcomeHelper().createNewStandaloneOutcome();
-    when(dateFormat.format(any())).thenReturn("2020-04-17T11:53:11.000+0000");
-    newAddressReportedProcessor.process(outcome, outcome.getCaseId(), "CE");
-    verify(gatewayOutcomeProducer).sendOutcome(outcomeEventCaptor.capture(), any(), any());
-    String outcomeEvent = outcomeEventCaptor.getValue();
-    JSONObject jsonObject = new JSONObject(outcomeEvent);
-    JSONObject collectionCase = jsonObject.getJSONObject("payload").getJSONObject("newAddress").getJSONObject("collectionCase").getJSONObject("address");
-    String estabType = collectionCase.get("estabType").toString();
-    Assertions.assertEquals(outcome.getCeDetails().getEstablishmentType(), estabType);
+    UUID result = newAddressReportedProcessor.process(outcome, outcome.getCaseId(), "CE");
+
+    verify(gatewayOutcomeProducer).logLegacyOutcomeSuppressed(
+        eq("Field.other"), eq("NEW_ADDRESS_REPORTED"), eq(String.valueOf(outcome.getTransactionId())));
+    verify(gatewayOutcomeProducer, never()).sendOutcome(any(), any());
+    verify(cacheService).save(any(GatewayCaseRecord.class));
+    verify(eventManager, never())
+      .triggerEvent(eq(outcome.getCaseId().toString()), eq("OUTCOME_SENT"), any(String[].class));
+    org.assertj.core.api.Assertions.assertThat(result).isEqualTo(outcome.getCaseId());
   }
 }
