@@ -3,6 +3,7 @@ package uk.gov.ons.census.fwmt.outcomeservice.converter.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import uk.gov.ons.census.fwmt.common.data.nc.RefusalTypeDTO;
 import uk.gov.ons.census.fwmt.common.storageutils.StorageUtils;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
 import uk.gov.ons.census.fwmt.common.events.component.GatewayEventManager;
@@ -120,7 +121,7 @@ public class HardRefusalReceivedProcessor implements OutcomeServiceProcessor {
     } catch (InterruptedException ignored) {}
 
     String outcomeEvent = eventDictionaryMessageFactory.buildRefusalReceived(
-        "HARD_REFUSAL",
+        RefusalTypeDTO.HARD_REFUSAL,
         caseId.toString(),
         outcome.getOfficerId());
     gatewayOutcomeProducer.sendOutcome(outcomeEvent, String.valueOf(outcome.getTransactionId()));

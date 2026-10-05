@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import uk.gov.ons.census.fwmt.common.data.nc.RefusalTypeDTO;
 
 class EventDictionaryMessageFactoryTest {
 
@@ -12,7 +13,8 @@ class EventDictionaryMessageFactoryTest {
 
   @Test
   void buildsRefusalReceivedEnvelope() throws Exception {
-    String payload = factory.buildRefusalReceived("HARD_REFUSAL", "case-123", "agent-789");
+        String payload =
+                factory.buildRefusalReceived(RefusalTypeDTO.HARD_REFUSAL, "case-123", "agent-789");
 
     JsonNode root = new ObjectMapper().readTree(payload);
     assertThat(root.path("header").path("version").asText()).isEqualTo("1.0.0");

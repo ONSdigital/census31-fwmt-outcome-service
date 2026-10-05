@@ -2,6 +2,7 @@ package uk.gov.ons.census.fwmt.outcomeservice.converter.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import uk.gov.ons.census.fwmt.common.data.nc.RefusalTypeDTO;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
 import uk.gov.ons.census.fwmt.common.events.component.GatewayEventManager;
 import uk.gov.ons.census.fwmt.outcomeservice.config.OutcomeSetup;
@@ -45,7 +46,7 @@ public class ExtraordinaryRefusalReceivedProcessor implements OutcomeServiceProc
     } catch (InterruptedException ignored) {}
 
     String outcomeEvent = eventDictionaryMessageFactory.buildRefusalReceived(
-        "EXTRAORDINARY_REFUSAL",
+        RefusalTypeDTO.EXTRAORDINARY_REFUSAL,
         caseId.toString(),
         outcome.getOfficerId());
 

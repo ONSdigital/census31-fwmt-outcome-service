@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
+import uk.gov.ons.census.fwmt.common.data.nc.RefusalTypeDTO;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
 import uk.gov.ons.census.fwmt.outcomeservice.config.GatewayOutcomeQueueConfig;
 
@@ -19,10 +20,10 @@ public class EventDictionaryMessageFactory {
     this.objectMapper = objectMapper;
   }
 
-  public String buildRefusalReceived(String refusalType, String caseId, String agentId)
+  public String buildRefusalReceived(RefusalTypeDTO refusalType, String caseId, String agentId)
       throws GatewayException {
     Map<String, Object> refusal = new LinkedHashMap<>();
-    refusal.put("type", refusalType);
+    refusal.put("type", refusalType.name());
     putIfHasText(refusal, "agentId", agentId);
     refusal.put("collectionCase", Map.of("id", caseId));
     return createMessage(
