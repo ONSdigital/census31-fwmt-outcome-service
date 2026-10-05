@@ -17,6 +17,7 @@ import uk.gov.ons.census.fwmt.outcomeservice.converter.impl.HardRefusalReceivedP
 import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
 import uk.gov.ons.census.fwmt.outcomeservice.helpers.HardRefusalHelper;
+import uk.gov.ons.census.fwmt.outcomeservice.message.EventDictionaryMessageFactory;
 import uk.gov.ons.census.fwmt.outcomeservice.message.GatewayOutcomeProducer;
 import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCaseRecordService;
 import uk.gov.ons.census.fwmt.outcomeservice.template.TemplateCreator;
@@ -62,6 +63,9 @@ public class HardRefusalReceivedProcessorTest {
   @Mock
   private GatewayOutcomeProducer gatewayOutcomeProducer;
 
+  @Mock
+  private EventDictionaryMessageFactory eventDictionaryMessageFactory;
+
   @Captor
   private ArgumentCaptor<GatewayCaseRecord> spiedCache;
 
@@ -72,7 +76,7 @@ public class HardRefusalReceivedProcessorTest {
     GatewayCaseRecord mockEntry = new GatewayCaseRecord();
     mockEntry.setCaseId(outcome.getCaseId().toString());
     when(cacheService.getById(outcome.getCaseId().toString())).thenReturn(mockEntry);
-    when(dateFormat.format(any())).thenReturn("2020-04-17T11:53:11.000+0000");
+    when(eventDictionaryMessageFactory.buildRefusalReceived(any(), any(), any())).thenReturn("{}");
     hardRefusalReceivedProcessor.process(outcome, outcome.getCaseId(), "HH");
     verify(cacheService).save(spiedCache.capture());
     String caseId = spiedCache.getValue().caseId;
@@ -106,7 +110,7 @@ public class HardRefusalReceivedProcessorTest {
     GatewayCaseRecord mockEntry = new GatewayCaseRecord();
     mockEntry.setCaseId(outcome.getCaseId().toString());
     when(cacheService.getById(outcome.getCaseId().toString())).thenReturn(mockEntry);
-    when(dateFormat.format(any())).thenReturn("2020-04-17T11:53:11.000+0000");
+    when(eventDictionaryMessageFactory.buildRefusalReceived(any(), any(), any())).thenReturn("{}");
     hardRefusalReceivedProcessor.process(outcome, outcome.getCaseId(), "HH");
     verify(cacheService).save(spiedCache.capture());
     String caseId = spiedCache.getValue().caseId;
@@ -120,7 +124,7 @@ public class HardRefusalReceivedProcessorTest {
     GatewayCaseRecord mockEntry = new GatewayCaseRecord();
     mockEntry.setCaseId(outcome.getCaseId().toString());
     when(cacheService.getById(outcome.getCaseId().toString())).thenReturn(mockEntry);
-    when(dateFormat.format(any())).thenReturn("2020-04-17T11:53:11.000+0000");
+    when(eventDictionaryMessageFactory.buildRefusalReceived(any(), any(), any())).thenReturn("{}");
     hardRefusalReceivedProcessor.process(outcome, outcome.getCaseId(), "HH");
     verify(cacheService).save(spiedCache.capture());
     String caseId = spiedCache.getValue().caseId;

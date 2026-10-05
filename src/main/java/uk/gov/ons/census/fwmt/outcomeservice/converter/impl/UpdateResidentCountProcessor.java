@@ -3,19 +3,15 @@ package uk.gov.ons.census.fwmt.outcomeservice.converter.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
-import uk.gov.ons.census.fwmt.common.rm.dto.ActionInstructionType;
+import uk.gov.ons.census.fwmt.common.dto.rm.ActionInstructionType;
 import uk.gov.ons.census.fwmt.common.events.component.GatewayEventManager;
-import uk.gov.ons.census.fwmt.outcomeservice.config.GatewayOutcomeQueueConfig;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceProcessor;
 import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
+import uk.gov.ons.census.fwmt.outcomeservice.message.EventDictionaryMessageFactory;
 import uk.gov.ons.census.fwmt.outcomeservice.message.GatewayOutcomeProducer;
 import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCaseRecordService;
-import uk.gov.ons.census.fwmt.outcomeservice.template.TemplateCreator;
 
-import java.text.DateFormat;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import static uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceLogConfig.*;
@@ -25,10 +21,10 @@ import static uk.gov.ons.census.fwmt.outcomeservice.enums.EventType.FIELD_CASE_U
 public class UpdateResidentCountProcessor implements OutcomeServiceProcessor {
 
   @Autowired
-  private DateFormat dateFormat;
+  private GatewayOutcomeProducer gatewayOutcomeProducer;
 
   @Autowired
-  private GatewayOutcomeProducer gatewayOutcomeProducer;
+  private EventDictionaryMessageFactory eventDictionaryMessageFactory;
 
   @Autowired
   private GatewayEventManager gatewayEventManager;
@@ -49,14 +45,9 @@ public class UpdateResidentCountProcessor implements OutcomeServiceProcessor {
     if (outcome.getCeDetails() == null) return caseId;
     if (outcome.getCeDetails().getUsualResidents() == null) return caseId;
 
-    String eventDateTime = dateFormat.format(outcome.getEventDate());
-    Map<String, Object> root = new HashMap<>();
-    root.put("outcome", outcome);
-    root.put("eventDate", eventDateTime);
-    root.put("caseId", caseId);
-    root.put("usualResidents", outcome.getCeDetails().getUsualResidents());
-
-    String outcomeEvent = TemplateCreator.createOutcomeMessage(FIELD_CASE_UPDATED, root);
+    String outcomeEvent = eventDictionaryMessageFactory.buildFieldCaseUpdated(
+      caseId.toString(),
+      outcome.getCeDetails().getUsualResidents());
 
     GatewayCaseRecord cache = gatewayCacheService.getById(String.valueOf(caseId));
 
@@ -66,14 +57,12 @@ public class UpdateResidentCountProcessor implements OutcomeServiceProcessor {
           .build());
     }
 
-    gatewayOutcomeProducer.sendOutcome(outcomeEvent, String.valueOf(outcome.getTransactionId()),
-        GatewayOutcomeQueueConfig.GATEWAY_FIELD_CASE_UPDATE_ROUTING_KEY);
+    gatewayOutcomeProducer.sendOutcome(outcomeEvent, String.valueOf(outcome.getTransactionId()));
 
     gatewayEventManager.triggerEvent(String.valueOf(caseId), OUTCOME_SENT,
         SURVEY_TYPE, type,
         TEMPLATE_TYPE, FIELD_CASE_UPDATED.toString(),
-        TRANSACTION_ID, outcome.getTransactionId().toString(),
-        ROUTING_KEY, GatewayOutcomeQueueConfig.GATEWAY_FIELD_CASE_UPDATE_ROUTING_KEY);
+        TRANSACTION_ID, outcome.getTransactionId().toString());
     return caseId;
   }
 }

@@ -1,18 +1,16 @@
 package uk.gov.ons.census.fwmt.outcomeservice.message;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.spring.pubsub.core.PubSubTemplate;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
-import uk.gov.ons.census.fwmt.outcomeservice.config.GatewayOutcomeQueueConfig;
-
-import java.time.Instant;
-import java.util.Map;
 
 @Slf4j
 @Component
@@ -21,46 +19,91 @@ public class GatewayOutcomeProducer {
   @Autowired
   private PubSubTemplate pubSubTemplate;
 
-  @Value("${app.messaging.destinations.fieldRefusals:Field.refusals}")
-  private String fieldRefusalsTopic;
-
-  @Value("${app.messaging.destinations.fieldOther:Field.other}")
-  private String fieldOtherTopic;
+  @Autowired
+  private ObjectMapper objectMapper;
 
   @Retryable
-  public void sendOutcome(String outcomeEvent, String transactionId, String routingKey) throws GatewayException {
-    long epochMilli = Instant.now().toEpochMilli();
+  public boolean sendOutcome(String outcomeEvent, String transactionId) throws GatewayException {
+    JsonNode envelope = parseEnvelope(outcomeEvent);
+    JsonNode header = envelope.path("header");
+    String topic = requiredHeaderValue(header, "topic", transactionId);
+    String messageType = requiredHeaderValue(header, "messageType", transactionId);
 
     PubsubMessage message = PubsubMessage.newBuilder()
         .setData(ByteString.copyFromUtf8(outcomeEvent))
-        .putAllAttributes(
-            Map.of(
-                "contentType", "application/json",
-                "routingKey", routingKey,
-                "timestamp", String.valueOf(epochMilli)))
+        .putAllAttributes(Map.of("contentType", "application/json"))
         .build();
 
-    String topic = topicForRoutingKey(routingKey);
     try {
       pubSubTemplate.publish(topic, message);
-      log.debug("Published outcome gateway event to Pub/Sub topic={} routingKey={}", topic, routingKey);
+      log.info(
+          "Published outcome gateway event operation={} messageType={} topic={} messageId={} correlationId={} caseId={} transactionId={}",
+          publicationDetail().operation(),
+          messageType,
+          topic,
+          header.path("messageId").asText(""),
+          header.path("correlationId").asText(""),
+          publicationDetail().caseId(),
+          transactionId);
+      return true;
     } catch (Exception e) {
       throw new GatewayException(GatewayException.Fault.SYSTEM_ERROR, e,
-          "Cannot publish outcome for transaction ID " + transactionId + " routingKey=" + routingKey);
+          "Cannot publish outcome for transaction ID " + transactionId
+              + " messageType=" + messageType + " topic=" + topic);
     }
   }
 
-  private String topicForRoutingKey(String routingKey) {
-    if (GatewayOutcomeQueueConfig.GATEWAY_RESPONDENT_REFUSAL_ROUTING_KEY.equals(routingKey)) {
-      return fieldRefusalsTopic;
+  private JsonNode parseEnvelope(String outcomeEvent) throws GatewayException {
+    try {
+      JsonNode envelope = objectMapper.readTree(outcomeEvent);
+      if (envelope == null || !envelope.isObject() || !envelope.path("header").isObject()) {
+        throw new GatewayException(
+            GatewayException.Fault.SYSTEM_ERROR,
+            "Invalid Event Dictionary outcome event: header is missing");
+      }
+      return envelope;
+    } catch (GatewayException exception) {
+      throw exception;
+    } catch (Exception exception) {
+      throw new GatewayException(
+          GatewayException.Fault.SYSTEM_ERROR,
+          "Invalid Event Dictionary outcome event: malformed JSON",
+          exception);
     }
-    if (GatewayOutcomeQueueConfig.GATEWAY_ADDRESS_UPDATE_ROUTING_KEY.equals(routingKey)
-        || GatewayOutcomeQueueConfig.GATEWAY_FULFILMENT_REQUEST_ROUTING_KEY.equals(routingKey)
-        || GatewayOutcomeQueueConfig.GATEWAY_QUESTIONNAIRE_UPDATE_ROUTING_KEY.equals(routingKey)
-        || GatewayOutcomeQueueConfig.GATEWAY_FIELD_CASE_UPDATE_ROUTING_KEY.equals(routingKey)
-        || GatewayOutcomeQueueConfig.GATEWAY_CCS_PROPERTY_LISTING_ROUTING_KEY.equals(routingKey)) {
-      return fieldOtherTopic;
-    }
-    return GatewayOutcomeQueueConfig.GATEWAY_OUTCOME_EXCHANGE;
   }
+
+  private String requiredHeaderValue(JsonNode header, String fieldName, String transactionId)
+      throws GatewayException {
+    String value = header.path(fieldName).asText("");
+    if (value.isBlank()) {
+      throw new GatewayException(
+          GatewayException.Fault.SYSTEM_ERROR,
+          "Invalid Event Dictionary outcome event: header." + fieldName
+              + " is required for transaction ID " + transactionId);
+    }
+    return value;
+  }
+
+  public void logLegacyOutcomeSuppressed(
+      String legacyDestination, String legacyEventType, String transactionId) {
+    OutcomeOperationContext.Details detail = publicationDetail();
+    log.error(
+        "Legacy outcome suppressed legacy=true legacyDestination={} legacyEventType={} operation={} outcomeCode={} caseId={} surveyType={} transactionId={}",
+        legacyDestination,
+        legacyEventType,
+        detail.operation(),
+        detail.outcomeCode(),
+        detail.caseId(),
+        detail.surveyType(),
+        transactionId);
+  }
+
+  private OutcomeOperationContext.Details publicationDetail() {
+    OutcomeOperationContext.Details detail = OutcomeOperationContext.get();
+    if (detail != null) {
+      return detail;
+    }
+    return new OutcomeOperationContext.Details("UNKNOWN", "UNKNOWN", "UNKNOWN", "N/A", "UNKNOWN");
+  }
+
 }

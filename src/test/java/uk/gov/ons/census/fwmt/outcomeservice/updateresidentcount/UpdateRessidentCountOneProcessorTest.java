@@ -19,6 +19,7 @@ import uk.gov.ons.census.fwmt.outcomeservice.converter.impl.UpdateResidentCountO
 import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
 import uk.gov.ons.census.fwmt.outcomeservice.helpers.OutcomeHelper;
+import uk.gov.ons.census.fwmt.outcomeservice.message.EventDictionaryMessageFactory;
 import uk.gov.ons.census.fwmt.outcomeservice.message.GatewayOutcomeProducer;
 import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCaseRecordService;
 import uk.gov.ons.census.fwmt.outcomeservice.template.TemplateCreator;
@@ -61,6 +62,9 @@ public class UpdateRessidentCountOneProcessorTest {
   @Mock
   private GatewayCaseRecordService gatewayCacheService;
 
+  @Mock
+  private EventDictionaryMessageFactory eventDictionaryMessageFactory;
+
   @Captor
   private ArgumentCaptor<GatewayCaseRecord> spiedCache;
 
@@ -71,7 +75,7 @@ public class UpdateRessidentCountOneProcessorTest {
   @DisplayName("Should update the closed cache state to update")
   public void shouldUpdateTheClosedCacheStateToUpdate() throws GatewayException, ParseException, JSONException {
     final OutcomeSuperSetDto outcome = new OutcomeHelper().createUpdateResidentOneCount();
-    when(dateFormat.format(any())).thenReturn("2020-04-17T11:53:11.000+0000");
+    when(eventDictionaryMessageFactory.buildFieldCaseUpdated(anyString(), any(Integer.class))).thenReturn("{}");
     GatewayCaseRecord gatewayCache = new GatewayCaseRecord();
     gatewayCache.setOriginalCaseId(outcome.getCaseId().toString());
     gatewayCache.setLastActionInstruction("CANCEL");

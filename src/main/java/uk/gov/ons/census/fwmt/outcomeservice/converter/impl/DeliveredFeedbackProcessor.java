@@ -4,13 +4,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
-import uk.gov.ons.census.fwmt.common.rm.dto.ActionInstructionType;
-import uk.gov.ons.census.fwmt.common.rm.dto.FwmtActionInstruction;
+import uk.gov.ons.census.fwmt.common.dto.rm.ActionInstructionType;
+import uk.gov.ons.census.fwmt.common.dto.rm.ActionInstruction;
 import uk.gov.ons.census.fwmt.common.events.component.GatewayEventManager;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceProcessor;
 import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
-import uk.gov.ons.census.fwmt.outcomeservice.message.RmFieldRepublishProducer;
+import uk.gov.ons.census.fwmt.outcomeservice.message.OutcomePublicationContext;
+import uk.gov.ons.census.fwmt.outcomeservice.message.PubSubFieldworkActionInstructionPublisher;
 import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCaseRecordService;
 
 import java.util.UUID;
@@ -22,7 +23,7 @@ import static uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceLogC
 public class DeliveredFeedbackProcessor implements OutcomeServiceProcessor {
 
   @Autowired
-  private RmFieldRepublishProducer rmFieldRepublishProducer;
+  private PubSubFieldworkActionInstructionPublisher fieldworkActionInstructionPublisher;
 
   @Autowired
   private GatewayEventManager gatewayEventManager;
@@ -48,7 +49,7 @@ public class DeliveredFeedbackProcessor implements OutcomeServiceProcessor {
           .build());
     }
 
-    FwmtActionInstruction fieldworkFollowup = FwmtActionInstruction.builder()
+    ActionInstruction fieldworkFollowup = ActionInstruction.builder()
         .actionInstruction(ActionInstructionType.UPDATE)
         .surveyName("CENSUS")
         .addressType(type)
@@ -56,9 +57,10 @@ public class DeliveredFeedbackProcessor implements OutcomeServiceProcessor {
         .caseId(caseId.toString())
         .build();
 
-    rmFieldRepublishProducer.republish(fieldworkFollowup);
+    fieldworkActionInstructionPublisher.publish(fieldworkFollowup,
+      new OutcomePublicationContext(caseId.toString(), outcome.getTransactionId(), outcome.getEventDate(), ""));
 
-    gatewayEventManager.triggerEvent(String.valueOf(caseId), RM_FIELD_REPUBLISH,
+    gatewayEventManager.triggerEvent(String.valueOf(caseId), FIELDWORK_ACTION_INSTRUCTION_PUBLISH,
         SURVEY_NAME, "CENSUS",
         ADDRESS_TYPE, type,
         ACTION_INSTRUCTION_TYPE, ActionInstructionType.UPDATE.toString(),

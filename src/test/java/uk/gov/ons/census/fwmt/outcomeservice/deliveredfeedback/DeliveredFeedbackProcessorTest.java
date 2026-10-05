@@ -12,8 +12,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
-import uk.gov.ons.census.fwmt.common.rm.dto.ActionInstructionType;
-import uk.gov.ons.census.fwmt.common.rm.dto.FwmtActionInstruction;
+import uk.gov.ons.census.fwmt.common.dto.rm.ActionInstructionType;
+import uk.gov.ons.census.fwmt.common.dto.rm.ActionInstruction;
 import uk.gov.ons.census.fwmt.common.events.component.GatewayEventManager;
 import uk.gov.ons.census.fwmt.outcomeservice.config.OutcomeSetup;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.impl.DeliveredFeedbackProcessor;
@@ -21,7 +21,7 @@ import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
 import uk.gov.ons.census.fwmt.outcomeservice.helpers.OutcomeHelper;
 import uk.gov.ons.census.fwmt.outcomeservice.message.GatewayOutcomeProducer;
-import uk.gov.ons.census.fwmt.outcomeservice.message.RmFieldRepublishProducer;
+import uk.gov.ons.census.fwmt.outcomeservice.message.PubSubFieldworkActionInstructionPublisher;
 import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCaseRecordService;
 import uk.gov.ons.census.fwmt.outcomeservice.template.TemplateCreator;
 
@@ -64,7 +64,7 @@ public class DeliveredFeedbackProcessorTest {
   private GatewayCaseRecordService gatewayCacheService;
 
   @Mock
-  private RmFieldRepublishProducer rmFieldRepublishProducer;
+  private PubSubFieldworkActionInstructionPublisher fieldworkActionInstructionPublisher;
 
   @Captor
   private ArgumentCaptor<GatewayCaseRecord> spiedCache;

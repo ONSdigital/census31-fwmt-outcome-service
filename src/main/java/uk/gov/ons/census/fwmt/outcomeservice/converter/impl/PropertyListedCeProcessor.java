@@ -4,17 +4,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
 import uk.gov.ons.census.fwmt.common.events.component.GatewayEventManager;
-import uk.gov.ons.census.fwmt.outcomeservice.config.GatewayOutcomeQueueConfig;
 import uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceProcessor;
 import uk.gov.ons.census.fwmt.outcomeservice.data.GatewayCaseRecord;
 import uk.gov.ons.census.fwmt.outcomeservice.dto.OutcomeSuperSetDto;
 import uk.gov.ons.census.fwmt.outcomeservice.message.GatewayOutcomeProducer;
 import uk.gov.ons.census.fwmt.outcomeservice.service.impl.GatewayCaseRecordService;
-import uk.gov.ons.census.fwmt.outcomeservice.template.TemplateCreator;
-
-import java.text.DateFormat;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import static uk.gov.ons.census.fwmt.outcomeservice.converter.OutcomeServiceLogConfig.*;
@@ -22,9 +16,6 @@ import static uk.gov.ons.census.fwmt.outcomeservice.enums.EventType.CCS_ADDRESS_
 
 @Component("PROPERTY_LISTED_CE")
 public class PropertyListedCeProcessor implements OutcomeServiceProcessor {
-
-  @Autowired
-  private DateFormat dateFormat;
 
   @Autowired
   private GatewayOutcomeProducer gatewayOutcomeProducer;
@@ -40,6 +31,9 @@ public class PropertyListedCeProcessor implements OutcomeServiceProcessor {
     UUID caseId = (caseIdHolder != null) ? caseIdHolder : outcome.getCaseId();
     UUID newCaseId = UUID.randomUUID();
 
+    // PROCESSING_OUTCOME telemetry remains intentional after retiring the legacy RM message;
+    // it records processing for the original case and generated property-listed case. Do not
+    // emit OUTCOME_SENT: no outcome message is published by this processor.
     gatewayEventManager.triggerEvent(String.valueOf(caseId), PROCESSING_OUTCOME,
         SURVEY_TYPE, type,
         PROCESSOR, "PROPERTY_LISTED_CE",
@@ -47,36 +41,26 @@ public class PropertyListedCeProcessor implements OutcomeServiceProcessor {
         PROPERTY_LISTED_CASE_ID, String.valueOf(newCaseId),
         ADDRESS_TYPE, "CE");
 
-    GatewayCaseRecord plCache = gatewayCacheService.getById(String.valueOf(caseId));
     cacheData(outcome, newCaseId);
 
-    String eventDateTime = dateFormat.format(outcome.getEventDate());
-    Map<String, Object> root = new HashMap<>();
-    root.put("outcome", outcome);
-    root.put("address", outcome.getAddress());
-    root.put("caseId", newCaseId);
-    root.put("eventDate", eventDateTime);
-    root.put("addressType", "CE");
-    root.put("addressLevel", "E");
-    root.put("interviewRequired", "False");
-    root.put("oa", plCache.getOa());
-    root.put("region",plCache.getOa().charAt(0));
-    root.put("estabType", outcome.getCeDetails() != null && outcome.getCeDetails().getEstablishmentType() != null ?
-        outcome.getCeDetails().getEstablishmentType() : "CE");
-    root.put("organisationName", outcome.getCeDetails() != null && outcome.getCeDetails().getEstablishmentName() != null ?
-        outcome.getCeDetails().getEstablishmentName() : "");
-
-    String outcomeEvent = TemplateCreator.createOutcomeMessage(CCS_ADDRESS_LISTED, root);
-
-    gatewayOutcomeProducer.sendOutcome(outcomeEvent, String.valueOf(outcome.getTransactionId()),
-        GatewayOutcomeQueueConfig.GATEWAY_CCS_PROPERTY_LISTING_ROUTING_KEY);
-
-    gatewayEventManager.triggerEvent(String.valueOf(caseId), OUTCOME_SENT,
-        SURVEY_TYPE, type,
-        PROPERTY_LISTED_CASE_ID, String.valueOf(newCaseId),
-        TEMPLATE_TYPE, CCS_ADDRESS_LISTED.toString(),
-        TRANSACTION_ID, outcome.getTransactionId().toString(),
-        ROUTING_KEY, GatewayOutcomeQueueConfig.GATEWAY_CCS_PROPERTY_LISTING_ROUTING_KEY);
+    // Historical CCS_ADDRESS_LISTED template values (not current runtime behavior):
+    // outcome: the outcome DTO.
+    // address: outcome address.
+    // caseId: newCaseId, the generated property-listed case ID.
+    // eventDate: formatted outcome event date.
+    // addressType: "CE".
+    // addressLevel: "E".
+    // interviewRequired: "False".
+    // oa: value from the parent/original case cache, loaded by
+    //     gatewayCacheService.getById(String.valueOf(caseId)).
+    // region: first character of the cached OA.
+    // estabType: establishment type, defaulting to "CE".
+    // organisationName: establishment name, defaulting to an empty string.
+    // There is no approved Event Dictionary destination for this legacy message, so it is
+    // intentionally suppressed; do not rebuild or publish it without an approved replacement
+    // contract.
+    gatewayOutcomeProducer.logLegacyOutcomeSuppressed(
+      "Field.other", CCS_ADDRESS_LISTED.toString(), String.valueOf(outcome.getTransactionId()));
 
     return newCaseId;
   }

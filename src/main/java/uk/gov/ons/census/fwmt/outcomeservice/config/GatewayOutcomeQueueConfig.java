@@ -5,14 +5,10 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class GatewayOutcomeQueueConfig {
 
-  // Exchange name
-  public static final String GATEWAY_OUTCOME_EXCHANGE = "events";
+  public static final String EVENT_REFUSAL_RECEIVED_TOPIC = "event_refusal-received";
+  public static final String EVENT_FIELD_CASE_UPDATED_TOPIC = "event_field-case-updated";
+  public static final String EVENT_FULFILMENT_REQUEST_TOPIC = "event_fulfilment-request";
+  public static final String EVENT_ADDRESS_NOT_VALID_TOPIC = "event_address-not-valid";
+  public static final String EVENT_QUESTIONNAIRE_LINKED_TOPIC = "event_questionnaire-linked";
 
-  // Routing keys
-  public static final String GATEWAY_RESPONDENT_REFUSAL_ROUTING_KEY = "event.respondent.refusal";
-  public static final String GATEWAY_ADDRESS_UPDATE_ROUTING_KEY = "event.case.address.update";
-  public static final String GATEWAY_FULFILMENT_REQUEST_ROUTING_KEY = "event.fulfilment.request";
-  public static final String GATEWAY_QUESTIONNAIRE_UPDATE_ROUTING_KEY = "event.questionnaire.update";
-  public static final String GATEWAY_FIELD_CASE_UPDATE_ROUTING_KEY = "event.fieldcase.update";
-  public static final String GATEWAY_CCS_PROPERTY_LISTING_ROUTING_KEY = "event.ccs.propertylisting";
 }
