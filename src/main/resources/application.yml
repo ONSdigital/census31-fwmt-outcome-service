@@ -117,4 +117,5 @@ app:
     subscriptions:
       outcomePreprocessingDlq: outcome-service-Outcome-PreprocessingDLQ
     pubsub:
+      rm-project-id: ${RM_PUBSUB_PROJECT:}
       outcome-preprocessing-subscription: outcome-service-Outcome-Preprocessing

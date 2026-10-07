@@ -23,69 +23,71 @@ import uk.gov.ons.census.fwmt.common.error.GatewayException;
 @ExtendWith(OutputCaptureExtension.class)
 class GatewayOutcomeProducerTest {
 
-  private final PubSubTemplate pubSubTemplate = org.mockito.Mockito.mock(PubSubTemplate.class);
+  private final PubSubTemplate fwmtPubSubTemplate = org.mockito.Mockito.mock(PubSubTemplate.class);
+  private final PubSubTemplate rmPubSubTemplate = org.mockito.Mockito.mock(PubSubTemplate.class);
 
   private final GatewayOutcomeProducer producer = new GatewayOutcomeProducer();
 
   @BeforeEach
   void setUp() {
-    ReflectionTestUtils.setField(producer, "pubSubTemplate", pubSubTemplate);
+    ReflectionTestUtils.setField(producer, "pubSubTemplate", fwmtPubSubTemplate);
+    ReflectionTestUtils.setField(producer, "rmPubSubTemplate", rmPubSubTemplate);
     ReflectionTestUtils.setField(producer, "objectMapper", new ObjectMapper());
   }
 
   @Test
   void publishesRefusalEventsToDictionaryTopic() throws GatewayException {
-    when(pubSubTemplate.publish(eq("event_refusal-received"), any(PubsubMessage.class)))
+    when(rmPubSubTemplate.publish(eq("event_refusal-received"), any(PubsubMessage.class)))
         .thenReturn(CompletableFuture.completedFuture("message-1"));
 
     producer.sendOutcome(message("event_refusal-received", "REFUSAL_RECEIVED"), "tx-1");
 
-    verify(pubSubTemplate).publish(eq("event_refusal-received"), any(PubsubMessage.class));
-    verify(pubSubTemplate, never()).publish(eq("Field.other"), any(PubsubMessage.class));
+    verify(rmPubSubTemplate).publish(eq("event_refusal-received"), any(PubsubMessage.class));
+    verify(fwmtPubSubTemplate, never()).publish(any(String.class), any(PubsubMessage.class));
   }
 
   @Test
   void publishesFieldCaseUpdatesToDictionaryTopic() throws GatewayException {
-    when(pubSubTemplate.publish(eq("event_field-case-updated"), any(PubsubMessage.class)))
+    when(rmPubSubTemplate.publish(eq("event_field-case-updated"), any(PubsubMessage.class)))
         .thenReturn(CompletableFuture.completedFuture("message-2"));
 
     producer.sendOutcome(message("event_field-case-updated", "FIELD_CASE_UPDATED"), "tx-2");
 
-    verify(pubSubTemplate).publish(eq("event_field-case-updated"), any(PubsubMessage.class));
-    verify(pubSubTemplate, never()).publish(eq("Field.other"), any(PubsubMessage.class));
+    verify(rmPubSubTemplate).publish(eq("event_field-case-updated"), any(PubsubMessage.class));
+    verify(fwmtPubSubTemplate, never()).publish(any(String.class), any(PubsubMessage.class));
   }
 
   @Test
   void publishesFulfilmentRequestsToDictionaryTopic() throws GatewayException {
-    when(pubSubTemplate.publish(eq("event_fulfilment-request"), any(PubsubMessage.class)))
+    when(rmPubSubTemplate.publish(eq("event_fulfilment-request"), any(PubsubMessage.class)))
         .thenReturn(CompletableFuture.completedFuture("message-3"));
 
     producer.sendOutcome(message("event_fulfilment-request", "FULFILMENT_REQUEST"), "tx-3");
 
-    verify(pubSubTemplate).publish(eq("event_fulfilment-request"), any(PubsubMessage.class));
-    verify(pubSubTemplate, never()).publish(eq("Field.other"), any(PubsubMessage.class));
+    verify(rmPubSubTemplate).publish(eq("event_fulfilment-request"), any(PubsubMessage.class));
+    verify(fwmtPubSubTemplate, never()).publish(any(String.class), any(PubsubMessage.class));
   }
 
   @Test
   void publishesAddressNotValidEventsToDictionaryTopic() throws GatewayException {
-    when(pubSubTemplate.publish(eq("event_address-not-valid"), any(PubsubMessage.class)))
+    when(rmPubSubTemplate.publish(eq("event_address-not-valid"), any(PubsubMessage.class)))
         .thenReturn(CompletableFuture.completedFuture("message-4"));
 
     producer.sendOutcome(message("event_address-not-valid", "ADDRESS_NOT_VALID"), "tx-4");
 
-    verify(pubSubTemplate).publish(eq("event_address-not-valid"), any(PubsubMessage.class));
-    verify(pubSubTemplate, never()).publish(eq("Field.other"), any(PubsubMessage.class));
+    verify(rmPubSubTemplate).publish(eq("event_address-not-valid"), any(PubsubMessage.class));
+    verify(fwmtPubSubTemplate, never()).publish(any(String.class), any(PubsubMessage.class));
   }
 
   @Test
   void publishesQuestionnaireLinkedEventsToDictionaryTopic() throws GatewayException {
-    when(pubSubTemplate.publish(eq("event_questionnaire-linked"), any(PubsubMessage.class)))
+    when(rmPubSubTemplate.publish(eq("event_questionnaire-linked"), any(PubsubMessage.class)))
         .thenReturn(CompletableFuture.completedFuture("message-5"));
 
     producer.sendOutcome(message("event_questionnaire-linked", "QUESTIONNAIRE_LINKED"), "tx-5");
 
-    verify(pubSubTemplate).publish(eq("event_questionnaire-linked"), any(PubsubMessage.class));
-    verify(pubSubTemplate, never()).publish(eq("Field.other"), any(PubsubMessage.class));
+    verify(rmPubSubTemplate).publish(eq("event_questionnaire-linked"), any(PubsubMessage.class));
+    verify(fwmtPubSubTemplate, never()).publish(any(String.class), any(PubsubMessage.class));
   }
 
   @Test
@@ -93,7 +95,7 @@ class GatewayOutcomeProducerTest {
     String topic = "event_questionnaire-linked";
     producer.sendOutcome(message(topic, "QUESTIONNAIRE_LINKED"), "tx-topic");
 
-    verify(pubSubTemplate).publish(eq(topic), any(PubsubMessage.class));
+    verify(rmPubSubTemplate).publish(eq(topic), any(PubsubMessage.class));
   }
 
   @Test
@@ -102,7 +104,8 @@ class GatewayOutcomeProducerTest {
         .isInstanceOf(GatewayException.class)
         .hasMessageContaining("Invalid Event Dictionary outcome event");
 
-    verify(pubSubTemplate, never()).publish(any(String.class), any(PubsubMessage.class));
+    verify(rmPubSubTemplate, never()).publish(any(String.class), any(PubsubMessage.class));
+    verify(fwmtPubSubTemplate, never()).publish(any(String.class), any(PubsubMessage.class));
   }
 
   @Test
@@ -116,13 +119,14 @@ class GatewayOutcomeProducerTest {
           .isInstanceOf(GatewayException.class);
     }
 
-    verify(pubSubTemplate, never()).publish(any(String.class), any(PubsubMessage.class));
+    verify(rmPubSubTemplate, never()).publish(any(String.class), any(PubsubMessage.class));
+    verify(fwmtPubSubTemplate, never()).publish(any(String.class), any(PubsubMessage.class));
   }
 
   @Test
   void publishFailureRetainsGatewayExceptionAndEventContext() {
     String event = message("event_refusal-received", "REFUSAL_RECEIVED");
-    when(pubSubTemplate.publish(eq("event_refusal-received"), any(PubsubMessage.class)))
+    when(rmPubSubTemplate.publish(eq("event_refusal-received"), any(PubsubMessage.class)))
         .thenThrow(new IllegalStateException("publish unavailable"));
 
     assertThatThrownBy(() -> producer.sendOutcome(event, "tx-publish"))
@@ -151,7 +155,8 @@ class GatewayOutcomeProducerTest {
         .contains("caseId=case-1")
         .contains("surveyType=HH")
         .contains("transactionId=tx-legacy");
-    verify(pubSubTemplate, never()).publish(any(String.class), any(PubsubMessage.class));
+    verify(rmPubSubTemplate, never()).publish(any(String.class), any(PubsubMessage.class));
+    verify(fwmtPubSubTemplate, never()).publish(any(String.class), any(PubsubMessage.class));
   }
 
   private String message(String topic, String messageType) {
