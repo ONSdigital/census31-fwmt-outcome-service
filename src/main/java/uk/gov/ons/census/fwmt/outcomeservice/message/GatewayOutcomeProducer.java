@@ -3,11 +3,13 @@ package uk.gov.ons.census.fwmt.outcomeservice.message;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.spring.pubsub.core.PubSubTemplate;
+import com.google.cloud.spring.pubsub.core.publisher.PubSubPublisherOperations;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
@@ -18,6 +20,10 @@ public class GatewayOutcomeProducer {
 
   @Autowired
   private PubSubTemplate pubSubTemplate;
+
+  @Autowired
+  @Qualifier("rmPubSubTemplate")
+  private PubSubPublisherOperations rmPubSubTemplate;
 
   @Autowired
   private ObjectMapper objectMapper;
@@ -35,7 +41,7 @@ public class GatewayOutcomeProducer {
         .build();
 
     try {
-      pubSubTemplate.publish(topic, message);
+      rmPubSubTemplate.publish(topic, message);
       log.info(
           "Published outcome gateway event operation={} messageType={} topic={} messageId={} correlationId={} caseId={} transactionId={}",
           publicationDetail().operation(),
