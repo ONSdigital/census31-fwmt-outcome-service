@@ -119,5 +119,3 @@ app:
     pubsub:
       rm-project-id: ${RM_PUBSUB_PROJECT:}
       outcome-preprocessing-subscription: outcome-service-Outcome-Preprocessing
-      outcome-preprocessing-stop-timeout: 30s
-      outcome-preprocessing-executor-threads: 4

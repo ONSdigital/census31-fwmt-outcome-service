@@ -1,19 +1,23 @@
 package uk.gov.ons.census.fwmt.outcomeservice.controller;
 
-import lombok.RequiredArgsConstructor;
+import com.google.cloud.spring.pubsub.integration.inbound.PubSubInboundChannelAdapter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import uk.gov.ons.census.fwmt.common.error.GatewayException;
 import uk.gov.ons.census.fwmt.outcomeservice.message.OutcomeProcessPreprocessingDlq;
-import uk.gov.ons.census.fwmt.outcomeservice.messaging.pubsub.OutcomePreprocessingSubscriberLifecycle;
 
 @Controller
-@RequiredArgsConstructor
 public class DlqController {
 
-  private final OutcomeProcessPreprocessingDlq outcomeProcessPreprocessingDLQ;
-  private final OutcomePreprocessingSubscriberLifecycle outcomePreprocessingSubscriberLifecycle;
+  @Autowired
+  OutcomeProcessPreprocessingDlq outcomeProcessPreprocessingDLQ;
+
+  @Autowired(required = false)
+  @Qualifier("outcomePreprocessingPubSubInbound")
+  PubSubInboundChannelAdapter outcomePreprocessingPubSubInbound;
 
   @GetMapping("/ProcessDLQ")
   public ResponseEntity<String> startDLQProcessor() throws GatewayException {
@@ -23,13 +27,17 @@ public class DlqController {
 
   @GetMapping("/StartPreprocessorListener")
   public ResponseEntity<String> startPreprocessorListener() {
-    outcomePreprocessingSubscriberLifecycle.resume();
+    if (outcomePreprocessingPubSubInbound != null) {
+      outcomePreprocessingPubSubInbound.start();
+    }
     return ResponseEntity.ok("Preprocessor listener started.");
   }
 
   @GetMapping("/StopPreprocessorListener")
   public ResponseEntity<String> stopPreprocessorListener() {
-    outcomePreprocessingSubscriberLifecycle.pause();
+    if (outcomePreprocessingPubSubInbound != null) {
+      outcomePreprocessingPubSubInbound.stop();
+    }
     return ResponseEntity.ok("Preprocessor listener stopped.");
   }
 }
