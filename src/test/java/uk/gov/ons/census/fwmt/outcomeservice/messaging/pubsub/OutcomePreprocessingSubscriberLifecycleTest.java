@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 
 import com.google.cloud.pubsub.v1.Subscriber;
 import com.google.cloud.spring.pubsub.core.PubSubTemplate;
+import com.google.cloud.spring.pubsub.support.DefaultSubscriberFactory;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -41,6 +42,9 @@ class OutcomePreprocessingSubscriberLifecycleTest {
   @Mock
   private Subscriber secondSubscriber;
 
+  @Mock
+  private DefaultSubscriberFactory subscriberFactory;
+
   private OutcomePreprocessingSubscriberLifecycle lifecycle;
 
   @BeforeEach
@@ -58,6 +62,17 @@ class OutcomePreprocessingSubscriberLifecycleTest {
 
     verify(pubSubTemplate, times(1)).subscribe(eq(SUBSCRIPTION), any());
     assertThat(lifecycle.isRunning()).isTrue();
+  }
+
+  @Test
+  void configuresOneReusableExecutorProviderForTheSubscriberFactory() {
+    when(pubSubTemplate.getSubscriberFactory()).thenReturn(subscriberFactory);
+    when(pubSubTemplate.subscribe(eq(SUBSCRIPTION), any())).thenReturn(firstSubscriber);
+
+    lifecycle.start();
+
+    verify(subscriberFactory).setExecutorProvider(any());
+    verify(subscriberFactory).setSystemExecutorProvider(any());
   }
 
   @Test
