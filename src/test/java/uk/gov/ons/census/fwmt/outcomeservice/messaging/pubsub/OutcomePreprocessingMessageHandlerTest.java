@@ -12,6 +12,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import uk.gov.ons.census.fwmt.outcomeservice.messaging.OutcomePreprocessingExceptionHandler;
 import uk.gov.ons.census.fwmt.outcomeservice.messaging.OutcomePreprocessingJsonCodec;
 import uk.gov.ons.census.fwmt.outcomeservice.messaging.OutcomePreprocessingMessageDispatcher;
+import uk.gov.ons.census.fwmt.common.error.GatewayException;
 
 @ExtendWith(MockitoExtension.class)
 class OutcomePreprocessingMessageHandlerTest {
@@ -29,7 +30,7 @@ class OutcomePreprocessingMessageHandlerTest {
   private BasicAcknowledgeablePubsubMessage originalMessage;
 
   @Test
-  void dispatchesDecodedMessagesAndAcknowledgesTheOriginalMessage() {
+  void dispatchesDecodedMessagesAndAcknowledgesTheOriginalMessage() throws GatewayException {
     PubsubMessage pubsubMessage = PubsubMessage.newBuilder().build();
     Object payload = new Object();
     when(originalMessage.getPubsubMessage()).thenReturn(pubsubMessage);

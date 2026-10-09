@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -61,7 +63,7 @@ class OutcomePreprocessingSubscriberLifecycleTest {
   void stopsAndAwaitsSubscriberTermination() throws TimeoutException {
     when(pubSubTemplate.subscribe(eq(SUBSCRIPTION), any())).thenReturn(firstSubscriber);
     when(firstSubscriber.stopAsync()).thenReturn(firstSubscriber);
-    when(firstSubscriber.awaitTerminated(30, TimeUnit.SECONDS)).thenReturn(firstSubscriber);
+    doNothing().when(firstSubscriber).awaitTerminated(30, TimeUnit.SECONDS);
     lifecycle.start();
 
     lifecycle.stop();
@@ -77,7 +79,7 @@ class OutcomePreprocessingSubscriberLifecycleTest {
     when(pubSubTemplate.subscribe(eq(SUBSCRIPTION), any()))
         .thenReturn(firstSubscriber, secondSubscriber);
     when(firstSubscriber.stopAsync()).thenReturn(firstSubscriber);
-    when(firstSubscriber.awaitTerminated(30, TimeUnit.SECONDS)).thenReturn(firstSubscriber);
+    doNothing().when(firstSubscriber).awaitTerminated(30, TimeUnit.SECONDS);
     lifecycle.start();
 
     lifecycle.stop();
@@ -94,8 +96,8 @@ class OutcomePreprocessingSubscriberLifecycleTest {
   void rejectsRestartWhenSubscriberDoesNotTerminate() throws TimeoutException {
     when(pubSubTemplate.subscribe(eq(SUBSCRIPTION), any())).thenReturn(firstSubscriber);
     when(firstSubscriber.stopAsync()).thenReturn(firstSubscriber);
-    when(firstSubscriber.awaitTerminated(30, TimeUnit.SECONDS))
-        .thenThrow(new TimeoutException("subscriber did not terminate"));
+    doThrow(new TimeoutException("subscriber did not terminate"))
+      .when(firstSubscriber).awaitTerminated(30, TimeUnit.SECONDS);
     lifecycle.start();
 
     assertThatIllegalStateException().isThrownBy(lifecycle::stop);
