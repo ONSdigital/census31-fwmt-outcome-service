@@ -23,13 +23,13 @@ public class DlqController {
 
   @GetMapping("/StartPreprocessorListener")
   public ResponseEntity<String> startPreprocessorListener() {
-    outcomePreprocessingSubscriberLifecycle.start();
+    outcomePreprocessingSubscriberLifecycle.resume();
     return ResponseEntity.ok("Preprocessor listener started.");
   }
 
   @GetMapping("/StopPreprocessorListener")
   public ResponseEntity<String> stopPreprocessorListener() {
-    outcomePreprocessingSubscriberLifecycle.stop();
+    outcomePreprocessingSubscriberLifecycle.pause();
     return ResponseEntity.ok("Preprocessor listener stopped.");
   }
 }

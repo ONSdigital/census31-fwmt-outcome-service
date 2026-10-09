@@ -42,14 +42,32 @@ public class OutcomePreprocessingSubscriberLifecycle implements SmartLifecycle {
       if (running) {
         return;
       }
+      messageHandler.resume();
       subscriber = pubSubTemplate.subscribe(subscription, messageHandler::handle);
       running = true;
+    }
+  }
+
+  public void pause() {
+    synchronized (lifecycleMonitor) {
+      messageHandler.pause();
+    }
+  }
+
+  public void resume() {
+    synchronized (lifecycleMonitor) {
+      if (running) {
+        messageHandler.resume();
+        return;
+      }
+      start();
     }
   }
 
   @Override
   public void stop() {
     synchronized (lifecycleMonitor) {
+      messageHandler.pause();
       if (subscriber == null) {
         running = false;
         return;

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -57,6 +58,20 @@ class OutcomePreprocessingSubscriberLifecycleTest {
 
     verify(pubSubTemplate, times(1)).subscribe(eq(SUBSCRIPTION), any());
     assertThat(lifecycle.isRunning()).isTrue();
+  }
+
+  @Test
+  void pausesAndResumesMessageProcessingWithoutReplacingTheSubscriber() {
+    when(pubSubTemplate.subscribe(eq(SUBSCRIPTION), any())).thenReturn(firstSubscriber);
+    lifecycle.start();
+    clearInvocations(messageHandler);
+
+    lifecycle.pause();
+    lifecycle.resume();
+
+    verify(messageHandler).pause();
+    verify(messageHandler).resume();
+    verify(pubSubTemplate, times(1)).subscribe(eq(SUBSCRIPTION), any());
   }
 
   @Test

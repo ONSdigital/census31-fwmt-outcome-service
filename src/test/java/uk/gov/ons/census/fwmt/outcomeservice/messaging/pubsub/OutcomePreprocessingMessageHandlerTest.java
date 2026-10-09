@@ -1,6 +1,7 @@
 package uk.gov.ons.census.fwmt.outcomeservice.messaging.pubsub;
 
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
 
 import com.google.cloud.spring.pubsub.support.BasicAcknowledgeablePubsubMessage;
@@ -57,5 +58,18 @@ class OutcomePreprocessingMessageHandlerTest {
 
     verify(exceptionHandler).handleFailure(pubsubMessage, failure);
     verify(originalMessage).ack();
+  }
+
+  @Test
+  void acknowledgesMessagesWithoutProcessingWhilePaused() throws GatewayException {
+    OutcomePreprocessingMessageHandler handler =
+        new OutcomePreprocessingMessageHandler(codec, dispatcher, exceptionHandler);
+    handler.pause();
+
+    handler.handle(originalMessage);
+
+    verify(originalMessage).ack();
+    verify(codec, never()).fromPubsubMessage(org.mockito.ArgumentMatchers.any());
+    verify(dispatcher, never()).dispatch(org.mockito.ArgumentMatchers.any());
   }
 }

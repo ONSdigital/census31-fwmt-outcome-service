@@ -26,7 +26,7 @@ class DlqControllerTest {
 
     ResponseEntity<String> response = controller.startPreprocessorListener();
 
-    verify(preprocessorLifecycle).start();
+    verify(preprocessorLifecycle).resume();
     assertThat(response.getBody()).isEqualTo("Preprocessor listener started.");
   }
 
@@ -36,7 +36,7 @@ class DlqControllerTest {
 
     ResponseEntity<String> response = controller.stopPreprocessorListener();
 
-    verify(preprocessorLifecycle).stop();
+    verify(preprocessorLifecycle).pause();
     assertThat(response.getBody()).isEqualTo("Preprocessor listener stopped.");
   }
 }
