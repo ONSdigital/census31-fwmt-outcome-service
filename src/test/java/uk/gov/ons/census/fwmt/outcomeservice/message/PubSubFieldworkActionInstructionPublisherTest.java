@@ -24,12 +24,12 @@ class PubSubFieldworkActionInstructionPublisherTest {
   @Test
   void publishesFlatInternalMessageWithStandardMetadata() {
     PubSubTemplate template = org.mockito.Mockito.mock(PubSubTemplate.class);
-    when(template.publish(eq("event_fieldwork_action-instruction_internal"),
+    when(template.publish(eq("event_action-instruction_internal"),
         org.mockito.ArgumentMatchers.any(PubsubMessage.class)))
         .thenReturn(CompletableFuture.completedFuture("message-123"));
     PubSubFieldworkActionInstructionPublisher publisher =
         new PubSubFieldworkActionInstructionPublisher(template, new ObjectMapper());
-    ReflectionTestUtils.setField(publisher, "topic", "event_fieldwork_action-instruction_internal");
+    ReflectionTestUtils.setField(publisher, "topic", "event_action-instruction_internal");
 
     ActionInstruction payload = ActionInstruction.builder()
         .actionInstruction(ActionInstructionType.UPDATE)
@@ -40,7 +40,7 @@ class PubSubFieldworkActionInstructionPublisherTest {
         "case-123", java.util.UUID.randomUUID(), Date.from(Instant.parse("2026-09-21T10:15:30Z")), ""));
 
     ArgumentCaptor<PubsubMessage> captured = ArgumentCaptor.forClass(PubsubMessage.class);
-    verify(template).publish(eq("event_fieldwork_action-instruction_internal"), captured.capture());
+    verify(template).publish(eq("event_action-instruction_internal"), captured.capture());
     verify(template, never()).publish(eq("RM.Field"), any(PubsubMessage.class));
     verify(template, never()).publish(eq("GW.Field"), any(PubsubMessage.class));
     PubsubMessage message = captured.getValue();

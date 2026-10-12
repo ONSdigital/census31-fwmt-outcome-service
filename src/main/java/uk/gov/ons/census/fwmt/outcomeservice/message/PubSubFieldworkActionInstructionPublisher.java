@@ -27,7 +27,7 @@ public class PubSubFieldworkActionInstructionPublisher {
   private final PubSubTemplate pubSubTemplate;
   private final ObjectMapper objectMapper;
 
-  @Value("${app.messaging.destinations.fieldworkActionInstructionInternal:event_fieldwork_action-instruction_internal}")
+  @Value("${app.messaging.destinations.fieldworkActionInstructionInternal:event_action-instruction_internal}")
   private String topic;
 
   @Value("${app.messaging.publish-timeout-millis:5000}")
